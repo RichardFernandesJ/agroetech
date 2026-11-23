@@ -11,6 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.character import Character
     from app.models.property import Property
 
 
@@ -27,4 +28,9 @@ class User(Base, TimestampMixin):
         back_populates="owner",
         cascade="all, delete-orphan",
         lazy="selectin",
+    )
+    character: Mapped[Character | None] = relationship(
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )

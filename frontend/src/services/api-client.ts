@@ -9,6 +9,8 @@ export interface ApiRequestOptions {
   token?: string | null;
   signal?: AbortSignal;
   headers?: Record<string, string>;
+  /** Mantém a requisição viva durante o fechamento da aba. */
+  keepalive?: boolean;
 }
 
 export class ApiError extends Error {
@@ -54,6 +56,7 @@ export class ApiClient {
         headers,
         body: options.body === undefined ? undefined : JSON.stringify(options.body),
         signal: options.signal,
+        keepalive: options.keepalive,
       });
     } catch {
       throw new ApiError(0, "Não foi possível conectar ao servidor.", "network_error");

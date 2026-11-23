@@ -11,11 +11,13 @@ from app.core.database import get_db
 from app.core.exceptions import AuthenticationError, InvalidTokenError
 from app.core.security import decode_access_token
 from app.models.user import User
+from app.repositories.character_repository import CharacterRepository
 from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.planting_repository import PlantingRepository
 from app.repositories.property_repository import PropertyRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
+from app.services.character_service import CharacterService
 from app.services.inventory_service import InventoryService
 from app.services.planting_service import PlantingService
 from app.services.production_service import ProductionService
@@ -65,6 +67,13 @@ def get_inventory_service(db: DbSession) -> InventoryService:
     return InventoryService(db, InventoryRepository(db))
 
 
+def get_character_service(
+    db: DbSession,
+    properties: Annotated[PropertyService, Depends(get_property_service)],
+) -> CharacterService:
+    return CharacterService(db, CharacterRepository(db), properties)
+
+
 def get_production_service(db: DbSession) -> ProductionService:
     return ProductionService(db, PlantingRepository(db))
 
@@ -87,3 +96,4 @@ PropertyServiceDep = Annotated[PropertyService, Depends(get_property_service)]
 InventoryServiceDep = Annotated[InventoryService, Depends(get_inventory_service)]
 ProductionServiceDep = Annotated[ProductionService, Depends(get_production_service)]
 PlantingServiceDep = Annotated[PlantingService, Depends(get_planting_service)]
+CharacterServiceDep = Annotated[CharacterService, Depends(get_character_service)]

@@ -6,21 +6,29 @@ import { FarmScene } from "@/game/scenes/FarmScene";
 /**
  * Configuração central do Phaser.
  *
- * A cena inicial apenas valida a integração com a API; as cenas de login,
- * inventário, plantio e produção serão adicionadas nas próximas etapas.
+ * `pixelArt` desliga a suavização para manter os tiles nítidos. O mundo usa
+ * Arcade Physics apenas para colisão e movimento; nenhuma regra de jogo roda
+ * no cliente.
  */
 export const GAME_CONFIG: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: "game-container",
   backgroundColor: "#0f1a12",
+  pixelArt: true,
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: 1280,
     height: 720,
   },
+  physics: {
+    default: "arcade",
+    arcade: {
+      gravity: { x: 0, y: 0 },
+      debug: false,
+    },
+  },
   render: {
-    antialias: true,
     roundPixels: true,
   },
   scene: [BootScene, FarmScene],

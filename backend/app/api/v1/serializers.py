@@ -8,9 +8,11 @@ from datetime import datetime
 from app.core.time import ensure_utc, utcnow
 from app.game.catalog import CropDefinition, get_crop, get_item
 from app.game.status import PlantingStatus
+from app.models.character import Character
 from app.models.inventory import InventoryItem
 from app.models.planting import Planting
 from app.schemas.catalog import CropRead, ItemRead
+from app.schemas.character import CharacterAppearance, CharacterRead
 from app.schemas.inventory import InventoryItemRead, InventoryRead
 from app.schemas.planting import HarvestAllRead, HarvestRead, PlantingRead
 from app.schemas.production import OfflineSyncRead
@@ -29,6 +31,24 @@ def serialize_crop(crop: CropDefinition) -> CropRead:
         max_cycles=crop.max_cycles,
         seed_item=crop.seed_item,
         product_item=crop.product_item,
+    )
+
+
+def serialize_character(character: Character) -> CharacterRead:
+    return CharacterRead(
+        id=character.id,
+        user_id=character.user_id,
+        property_id=character.property_id,
+        name=character.name,
+        appearance=CharacterAppearance(
+            skin_tone=character.skin_tone,
+            hair_style=character.hair_style,
+            outfit_color=character.outfit_color,
+        ),
+        position_x=character.position_x,
+        position_y=character.position_y,
+        facing=character.facing,
+        created_at=character.created_at,
     )
 
 

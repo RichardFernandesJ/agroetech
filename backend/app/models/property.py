@@ -13,6 +13,7 @@ from app.core.time import utcnow
 from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.character import Character
     from app.models.inventory import InventoryItem
     from app.models.planting import Planting
     from app.models.user import User
@@ -44,6 +45,10 @@ class Property(Base, TimestampMixin):
         cascade="all, delete-orphan",
     )
     plantings: Mapped[list[Planting]] = relationship(
+        back_populates="property",
+        cascade="all, delete-orphan",
+    )
+    characters: Mapped[list[Character]] = relationship(
         back_populates="property",
         cascade="all, delete-orphan",
     )
