@@ -1,0 +1,78 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agro}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agro}
+      POSTGRES_DB: ${POSTGRES_DB:-agroetech}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agro} -d ${POSTGRES_DB:-agroetech}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      AGRO_DATABASE_URL: "postgresql+asyncpg://${POSTGRES_USER:-agro}:${POSTGRES_PASSWORD:-agro}@db:5432/${POSTGRES_DB:-agroetech}"
+      AGRO_JWT_SECRET: ${AGRO_JWT_SECRET:-dev-secret-change-me-in-production}
+      AGRO_ACCESS_TOKEN_EXPIRE_MINUTES: ${AGRO_ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      AGRO_AUTO_CREATE_TABLES: "false"
+      AGRO_OFFLINE_MAX_HOURS: ${AGRO_OFFLINE_MAX_HOURS:-12}
+      AGRO_OFFLINE_MAX_CYCLES_PER_PLANTING: ${AGRO_OFFLINE_MAX_CYCLES_PER_PLANTING:-8}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  web:
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      API_PROXY_TARGET: http://api:8000
+      VITE_API_URL: /api/v1
+      VITE_HEALTH_URL: /health
+      VITE_GAME_TITLE: "Agro & Tech"
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+
+  tests:
+    build:
+      context: ./backend
+    profiles: ["test"]
+    environment:
+      AGRO_DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+    volumes:
+      - ./backend:/app
+    command: sh -c "pip install -r requirements-dev.txt && pytest"
+
+volumes:
+  pgdata:

@@ -1,0 +1,229 @@
+# Banco de dados — Agro & Tech
+
+Banco principal: **PostgreSQL 16**. Driver: `asyncpg` via SQLAlchemy 2 async.
+Testes usam SQLite em memória (`aiosqlite`), exceto o teste de migração, que usa
+um arquivo SQLite temporário.
+
+O schema é versionado com **Alembic**. `AGRO_AUTO_CREATE_TABLES=true` existe
+apenas para bancos descartáveis de prototipagem.
+
+## 1. Modelo entidade-relacionamento
+
+```
+┌──────────────┐
+│    users     │
+│──────────────│
+│ id (PK)      │
+│ email  UQ    │
+│ username UQ  │
+└──────┬───────┘
+       │ 1:N (owner_id, CASCADE)
+       ▼
+┌──────────────────────┐
+│      properties      │
+│──────────────────────│
+│ id (PK)              │
+│ owner_id (FK)        │
+│ name                 │
+│ area_hectares        │
+│ plot_count           │
+│ last_production_sync │
+└──────┬───────────┬───┘
+       │ 1:N       │ 1:N
+       ▼           ▼
+┌───────────────┐  ┌────────────────────┐
+│inventory_items│  │     plantings      │
+│───────────────│  │────────────────────│
+│ id (PK)       │  │ id (PK)            │
+│ property_id   │  │ property_id (FK)   │
+│ item_id       │  │ crop_id            │
+│ quantity      │  │ plot_index         │
+│ UQ(prop,item) │  │ status             │
+└───────────────┘  │ stored_cycles      │
+                   └────────────────────┘
+                            │
+                            ▼
+                   catálogo em código
+                   (app/game/catalog.py)
+```
+
+O catálogo de culturas/itens **não** é tabela nesta etapa: é conteúdo
+versionado em código. `crop_id` e `item_id` são strings estáveis.
+
+## 2. Convenções
+
+- Chaves primárias: `UUID` geradas na aplicação (`uuid.uuid4`).
+- Timestamps: `TIMESTAMPTZ` em UTC; `created_at` e `updated_at` em todas as
+  tabelas.
+- Nomes: tabelas em plural, colunas em `snake_case`, constraints prefixadas
+  (`ck_`, `uq_`, `ix_`).
+- Exclusões: `ON DELETE CASCADE` de `users` → `properties` → filhos.
+- Dinheiro e tempo são responsabilidade do servidor; não há colunas calculadas
+  pelo cliente.
+- Toda alteração estrutural passa por uma revisão do Alembic.
+
+## 3. Tabelas
+
+### `users`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `email` | VARCHAR(255) | NOT NULL, único (`ix_users_email`) |
+| `username` | VARCHAR(50) | NOT NULL, único (`ix_users_username`) |
+| `password_hash` | VARCHAR(255) | NOT NULL; PBKDF2-HMAC-SHA256 |
+| `is_active` | BOOLEAN | NOT NULL |
+| `created_at` | TIMESTAMPTZ | NOT NULL |
+| `updated_at` | TIMESTAMPTZ | NOT NULL |
+
+E-mail e username são gravados em minúsculas pelo serviço de autenticação.
+
+### `properties`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `owner_id` | UUID | FK `users.id`, CASCADE, indexado |
+| `name` | VARCHAR(120) | NOT NULL |
+| `area_hectares` | DOUBLE PRECISION | NOT NULL, > 0 |
+| `plot_count` | INTEGER | NOT NULL, 1..24 no schema; limite de serviço configurável |
+| `last_production_sync_at` | TIMESTAMPTZ | NOT NULL; relógio da produção offline |
+| `created_at` / `updated_at` | TIMESTAMPTZ | NOT NULL |
+
+Índice: `ix_properties_owner_id`.
+
+### `inventory_items`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `property_id` | UUID | FK `properties.id`, CASCADE, indexado |
+| `item_id` | VARCHAR(80) | NOT NULL; `seed_*` ou `crop_*` |
+| `quantity` | INTEGER | NOT NULL, `>= 0` |
+| `created_at` / `updated_at` | TIMESTAMPTZ | NOT NULL |
+
+Constraints:
+
+- `uq_inventory_property_item (property_id, item_id)` — uma linha por item.
+- `ck_inventory_quantity_non_negative` — impede quantidade negativa.
+- Índice `ix_inventory_items_property_id`.
+
+### `plantings`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `property_id` | UUID | FK `properties.id`, CASCADE, indexado |
+| `crop_id` | VARCHAR(40) | NOT NULL; referência ao catálogo |
+| `plot_index` | INTEGER | NOT NULL, `>= 0` |
+| `planted_at` | TIMESTAMPTZ | NOT NULL |
+| `next_ready_at` | TIMESTAMPTZ | NOT NULL; próximo ciclo |
+| `cycles_done` | INTEGER | NOT NULL, `>= 0` |
+| `stored_cycles` | INTEGER | NOT NULL, `>= 0`; colheitas prontas |
+| `status` | VARCHAR(20) | `growing` / `ready` / `exhausted` |
+| `created_at` / `updated_at` | TIMESTAMPTZ | NOT NULL |
+
+Constraints e índices:
+
+- `ck_plantings_plot_index_non_negative`
+- `ck_plantings_cycles_done_non_negative`
+- `ck_plantings_stored_cycles_non_negative`
+- `ix_plantings_property_id`
+- `ix_plantings_property_status (property_id, status)`
+- `uq_plantings_active_plot (property_id, plot_index) WHERE status <> 'exhausted'`
+
+O índice parcial garante **um plantio ativo por talhão** sem impedir o histórico
+de plantios esgotados. Funciona em PostgreSQL e SQLite.
+
+## 4. Regras que o banco não expressa
+
+Algumas regras ficam nos services porque dependem do catálogo ou de tempo:
+
+- cultura existente e sementes suficientes;
+- `plot_index < property.plot_count`;
+- cálculo de ciclos prontos e teto offline;
+- transição de `status`;
+- posse da fazenda/plantio (sempre filtrada por `owner_id`).
+
+O banco reforça o que é estrutural: unicidade, FK, quantidade não negativa e
+um plantio ativo por talhão.
+
+## 5. Migrações
+
+Arquivos:
+
+```
+backend/
+├── alembic.ini
+├── alembic/
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
+│       └── 0001_foundation.py
+```
+
+Comandos (a partir de `backend/`):
+
+```bash
+alembic upgrade head          # aplica todas as revisões
+alembic current               # revisão atual
+alembic history --verbose     # histórico
+alembic downgrade -1          # desfaz a última
+alembic revision --autogenerate -m "descrição"
+alembic upgrade head --sql    # SQL offline para revisão
+```
+
+A URL vem de `AGRO_DATABASE_URL`. Para apontar para outro banco sem alterar o
+`.env`:
+
+```bash
+# PowerShell
+$env:AGRO_DATABASE_URL="postgresql+asyncpg://agro:agro@localhost:5432/agroetech"
+alembic upgrade head
+```
+
+No Docker Compose, o serviço `api` executa `alembic upgrade head` antes do
+Uvicorn.
+
+### Banco criado antes do Alembic
+
+Se o banco já foi criado com `create_all` e está com o schema correto, marque a
+revisão inicial sem reexecutá-la:
+
+```bash
+alembic stamp 0001_foundation
+```
+
+Depois disso, use apenas `alembic upgrade head`.
+
+### Verificação automática
+
+`backend/tests/test_migrations.py`:
+
+1. aplica `0001_foundation` em um SQLite temporário;
+2. compara tabelas e colunas com `Base.metadata`;
+3. confere a revisão e o índice parcial;
+4. executa `downgrade base` e verifica a limpeza.
+
+Isso detecta model alterado sem migração correspondente.
+
+## 6. Estratégia de testes
+
+- **API/services**: SQLite em memória com `StaticPool` e `create_all`.
+- **Migrações**: SQLite em arquivo temporário, via API do Alembic.
+- **Produção**: PostgreSQL real; recursos como `SELECT ... FOR UPDATE` só são
+  exercitados lá. O repositório de inventário usa `FOR UPDATE` para evitar
+  corrida na compra/consumo de itens.
+
+## 7. Próximas entidades (roadmap)
+
+Fase 2: `characters` (nome, aparência, posição, fazenda atual).
+
+Fase 4: `wallets`, `wallet_ledger`, `market_listings`, `market_transactions`,
+`trade_offers`, `trade_items`.
+
+Fase 5: `animals`, `buildings`, `recipes`, `production_jobs`, `skills`,
+`player_skills`.
+
+Toda nova entidade deve vir com migração, índices para consultas por
+proprietário/status e testes de autorização.
