@@ -868,3 +868,32 @@ form {
   .trade-row { grid-template-columns: 1fr; }
   .trade-actions { justify-content: flex-start; }
 }
+
+/* ---- Progressão: nível e XP ---- */
+.hud-level {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.hud-level-label {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  color: var(--cream);
+}
+
+.hud-xp-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.hud-xp-fill {
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7bd88f, #f0c85a);
+  transition: width 0.4s ease;
+}

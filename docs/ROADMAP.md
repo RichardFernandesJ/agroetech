@@ -15,6 +15,7 @@ mas falta escopo da fase.
 | 2 | Ilha e Câmera Livre (God-View) | ✅ Concluída |
 | 3 | Agricultura Point & Click | ✅ Concluída |
 | 4 | Economia básica (AgroCoin & Mercado) | 🟡 Em andamento (núcleo pronto) |
+| 4.5 | Progressão e Talentos (XP, árvore, presets) | 🟡 Em andamento (fatia 1 pronta) |
 | 5 | Produção (animais, construções, fabricação) | ⬜ Não iniciada |
 | 6 | Multiplayer econômico | ⬜ Não iniciada |
 | 7 | Expansão (cidades, regiões, profissões) | ⬜ Não iniciada |
@@ -71,6 +72,16 @@ com o mouse com resposta visual imediata.
 - [ ] Balanceamento fino de preços com dados de jogo reais.
 - [ ] Rate limiting nas rotas de mercado (Fase 8).
 
+## Fase 4.5 — Progressão e Talentos 🟡
+
+Desenho completo em [`TALENTS.md`](TALENTS.md). Inserida antes da Fase 5 por decisão
+de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
+
+- [x] Fatia 1 — XP e níveis (1 a 50), XP por plantio e colheita, barra no HUD.
+- [ ] Fatia 2 — Motor de modificadores e talentos (Agricultura e Comércio), pontos, presets e redefinição.
+- [ ] Fatia 3 — Interface da árvore de talentos (mapa com pan/zoom).
+- [ ] Fatia 4 — Demais ramos, conforme as mecânicas da Fase 5.
+
 ## Fase 5 — Produção ⬜
 
 - [ ] Animais (galinha, vaca, ovelha, porco, cabra, abelha).
@@ -116,7 +127,7 @@ com o mouse com resposta visual imediata.
 | Inventário | ✅ |
 | Venda para NPCs | ✅ |
 | Compra de sementes | ✅ |
-| Experiência e níveis | ⬜ |
+| Experiência e níveis | ✅ |
 | Construção melhorável | ⬜ (Fase 5) |
 
 ## Pendências técnicas
@@ -126,5 +137,5 @@ com o mouse com resposta visual imediata.
 
 ## Próxima entrega recomendada
 
-**Experiência e níveis:** XP por plantio e colheita e nível no HUD; depois, a primeira
-construção melhorável (Fase 5), que fecha o MVP.
+**Fatia 2 da Fase 4.5:** motor de modificadores e talentos no servidor. A primeira
+construção melhorável (Fase 5) fecha o MVP.

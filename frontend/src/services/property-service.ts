@@ -39,6 +39,7 @@ export interface HarvestOutcome {
   seed_name: string;
   seed_quantity: number;
   planting_status: PlantingStatus;
+  xp_gained: number;
 }
 
 export interface HarvestAllOutcome {
@@ -46,6 +47,7 @@ export interface HarvestAllOutcome {
   harvests: HarvestOutcome[];
   products: Record<string, number>;
   seeds: Record<string, number>;
+  xp_gained: number;
 }
 
 export interface InventoryItem {
@@ -71,6 +73,7 @@ export interface CropCatalogItem {
   max_cycles: number;
   seed_price: number;
   sell_price: number;
+  harvest_xp: number;
   seed_item: string;
   product_item: string;
 }

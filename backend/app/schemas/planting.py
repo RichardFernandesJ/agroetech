@@ -41,6 +41,7 @@ class HarvestRead(BaseModel):
     seed_name: str
     seed_quantity: int
     planting_status: PlantingStatus
+    xp_gained: int
 
 
 class HarvestAllRead(BaseModel):
@@ -48,3 +49,4 @@ class HarvestAllRead(BaseModel):
     harvests: list[HarvestRead]
     products: dict[str, int]
     seeds: dict[str, int]
+    xp_gained: int

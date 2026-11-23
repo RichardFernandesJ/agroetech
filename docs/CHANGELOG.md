@@ -11,6 +11,15 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.4.0] — 2026-11-23
+
+### Adicionado
+
+- **XP e níveis:** tabela `player_progress` (migração `0004_progress`), curva de nível 1–50, `GET /progress`.
+- XP ao plantar (2) e ao colher (`harvest_xp` por ciclo); `xp_gained` nas respostas de colheita.
+- Barra de nível e XP no HUD e aviso de subida de nível.
+- `docs/TALENTS.md`: desenho aprovado de talentos, presets, guildas e disputas; Fase 4.5 no ROADMAP.
+
 ## [0.3.0] — 2026-11-23
 
 ### Adicionado

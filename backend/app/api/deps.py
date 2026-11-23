@@ -14,6 +14,7 @@ from app.models.user import User
 from app.repositories.character_repository import CharacterRepository
 from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.planting_repository import PlantingRepository
+from app.repositories.progress_repository import ProgressRepository
 from app.repositories.property_repository import PropertyRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.wallet_repository import WalletRepository
@@ -23,6 +24,7 @@ from app.services.inventory_service import InventoryService
 from app.services.market_service import MarketService
 from app.services.planting_service import PlantingService
 from app.services.production_service import ProductionService
+from app.services.progress_service import ProgressService
 from app.services.property_service import PropertyService
 from app.services.wallet_service import WalletService
 
@@ -83,6 +85,10 @@ def get_market_service(
     return MarketService(properties, inventory, wallets)
 
 
+def get_progress_service(db: DbSession) -> ProgressService:
+    return ProgressService(db, ProgressRepository(db))
+
+
 def get_character_service(
     db: DbSession,
     properties: Annotated[PropertyService, Depends(get_property_service)],
@@ -104,6 +110,7 @@ def get_planting_service(
         plantings=PlantingRepository(db),
         inventory=InventoryService(db, InventoryRepository(db)),
         production=production,
+        progress=ProgressService(db, ProgressRepository(db)),
     )
 
 
@@ -115,3 +122,4 @@ PlantingServiceDep = Annotated[PlantingService, Depends(get_planting_service)]
 CharacterServiceDep = Annotated[CharacterService, Depends(get_character_service)]
 WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
 MarketServiceDep = Annotated[MarketService, Depends(get_market_service)]
+ProgressServiceDep = Annotated[ProgressService, Depends(get_progress_service)]

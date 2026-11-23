@@ -31,6 +31,7 @@ def serialize_crop(crop: CropDefinition) -> CropRead:
         max_cycles=crop.max_cycles,
         seed_price=crop.seed_price,
         sell_price=crop.sell_price,
+        harvest_xp=crop.harvest_xp,
         seed_item=crop.seed_item,
         product_item=crop.product_item,
     )
@@ -141,6 +142,7 @@ def serialize_harvest(outcome: HarvestOutcome) -> HarvestRead:
         seed_name=outcome.seed_name,
         seed_quantity=outcome.seed_quantity,
         planting_status=outcome.planting_status,
+        xp_gained=outcome.xp_gained,
     )
 
 
@@ -161,6 +163,7 @@ def serialize_harvest_all(
         harvests=[serialize_harvest(outcome) for outcome in outcomes],
         products=products,
         seeds=seeds,
+        xp_gained=sum(outcome.xp_gained for outcome in outcomes),
     )
 
 

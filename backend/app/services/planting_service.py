@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ConflictError, GameRuleError, NotFoundError
 from app.core.time import utcnow
 from app.game.catalog import get_crop, get_item
+from app.game.progression import PLANT_XP
 from app.game.status import PlantingStatus
 from app.models.planting import Planting
 from app.models.property import Property
@@ -17,6 +18,7 @@ from app.repositories.planting_repository import PlantingRepository
 from app.schemas.planting import PlantingCreate
 from app.services.inventory_service import InventoryService
 from app.services.production_service import ProductionService
+from app.services.progress_service import ProgressService
 from app.services.property_service import PropertyService
 
 
@@ -33,6 +35,7 @@ class HarvestOutcome:
     seed_name: str
     seed_quantity: int
     planting_status: PlantingStatus
+    xp_gained: int = 0
 
 
 class PlantingService:
@@ -43,12 +46,14 @@ class PlantingService:
         plantings: PlantingRepository,
         inventory: InventoryService,
         production: ProductionService,
+        progress: ProgressService,
     ) -> None:
         self.session = session
         self.properties = properties
         self.plantings = plantings
         self.inventory = inventory
         self.production = production
+        self.progress = progress
 
     async def list_plantings(
         self,
@@ -101,7 +106,9 @@ class PlantingService:
             stored_cycles=0,
             status=PlantingStatus.GROWING.value,
         )
-        return await self.plantings.add(planting)
+        await self.plantings.add(planting)
+        await self.progress.grant(property_.owner_id, PLANT_XP)
+        return planting
 
     async def harvest(
         self,
@@ -156,6 +163,8 @@ class PlantingService:
 
         await self.session.flush()
 
+        grant = await self.progress.grant(property_.owner_id, cycles * crop.harvest_xp)
+
         product = get_item(crop.product_item)
         seed = get_item(crop.seed_item)
 
@@ -171,4 +180,5 @@ class PlantingService:
             seed_name=seed.name if seed else crop.seed_item,
             seed_quantity=seed_quantity,
             planting_status=PlantingStatus(planting.status),
+            xp_gained=grant.gained,
         )

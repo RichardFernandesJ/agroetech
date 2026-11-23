@@ -16,6 +16,7 @@ test("cadastro, perfil, HUD da ilha e sessão persistente", async ({ page }) => 
   await expect(page.locator("canvas")).toBeVisible();
   await expect(page.locator(".hud-name")).toHaveText("Ana");
   await expect(page.locator(".hud-farm")).toContainText("talhões");
+  await expect(page.locator(".hud-level-label")).toContainText("Nv 1");
   await expect(page.locator(".hud-btn-harvest")).toBeHidden(); // nada pronto ainda
 
   // Controles de câmera do HUD respondem sem erro.

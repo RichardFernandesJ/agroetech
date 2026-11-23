@@ -165,6 +165,19 @@ sempre iguala `wallets.balance` (verificado em teste).
 Constraints: `uq_wallet_ledger_idempotency (wallet_id, idempotency_key)`,
 `ck_wallet_ledger_balance_non_negative`. Migração: `0003_wallet`.
 
+### `player_progress`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `user_id` | UUID | FK `users.id`, CASCADE, único |
+| `xp` | BIGINT | NOT NULL, `>= 0` |
+| `created_at` / `updated_at` | TIMESTAMPTZ | NOT NULL |
+
+O nível é derivado do XP (`game/progression.py`), nunca armazenado.
+Constraints: `uq_player_progress_user_id`, `ck_player_progress_xp_non_negative`.
+Migração: `0004_progress`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:

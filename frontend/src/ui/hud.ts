@@ -18,6 +18,8 @@ export class Hud {
   private readonly nameElement: HTMLHeadingElement;
   private readonly farmElement: HTMLParagraphElement;
   private readonly balanceElement: HTMLParagraphElement;
+  private readonly levelLabel: HTMLSpanElement;
+  private readonly levelFill: HTMLDivElement;
   private readonly promptElement: HTMLDivElement;
   private readonly promptLabel: HTMLSpanElement;
   private readonly toastElement: HTMLDivElement;
@@ -54,7 +56,21 @@ export class Hud {
     this.balanceElement.textContent = "🪙 — AGC";
     this.balanceElement.addEventListener("click", () => actions?.onOpenMarket?.());
 
-    card.append(eyebrow, this.nameElement, this.farmElement, this.balanceElement);
+    // Nível e barra de experiência.
+    const levelRow = document.createElement("div");
+    levelRow.className = "hud-level";
+    this.levelLabel = document.createElement("span");
+    this.levelLabel.className = "hud-level-label";
+    this.levelLabel.textContent = "Nv 1";
+    const levelBar = document.createElement("div");
+    levelBar.className = "hud-xp-bar";
+    levelBar.setAttribute("role", "progressbar");
+    this.levelFill = document.createElement("div");
+    this.levelFill.className = "hud-xp-fill";
+    levelBar.append(this.levelFill);
+    levelRow.append(this.levelLabel, levelBar);
+
+    card.append(eyebrow, this.nameElement, this.farmElement, levelRow, this.balanceElement);
 
     const hint = document.createElement("p");
     hint.className = "hud-hint";
@@ -122,6 +138,22 @@ export class Hud {
 
   setFarm(name: string, plotCount: number): void {
     this.farmElement.textContent = `${name} · ${plotCount} talhões`;
+  }
+
+  setProgress(progress: {
+    level: number;
+    xp_into_level: number;
+    xp_for_next: number | null;
+  }): void {
+    const ratio =
+      progress.xp_for_next === null ? 1 : progress.xp_into_level / progress.xp_for_next;
+    this.levelLabel.textContent =
+      progress.xp_for_next === null
+        ? `Nv ${progress.level} (máx.)`
+        : `Nv ${progress.level} · ${progress.xp_into_level}/${progress.xp_for_next} XP`;
+    this.levelFill.style.width = `${Math.round(Math.min(1, Math.max(0, ratio)) * 100)}%`;
+    const bar = this.levelFill.parentElement;
+    bar?.setAttribute("aria-valuenow", String(Math.round(ratio * 100)));
   }
 
   setBalance(balance: number): void {

@@ -10,6 +10,7 @@ from app.api.v1.routes import (
     market,
     plantings,
     production,
+    progress,
     properties,
     wallet,
 )
@@ -24,3 +25,4 @@ api_router.include_router(production.router)
 api_router.include_router(catalog.router)
 api_router.include_router(wallet.router)
 api_router.include_router(market.router)
+api_router.include_router(progress.router)

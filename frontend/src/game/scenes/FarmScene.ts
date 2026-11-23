@@ -22,6 +22,7 @@ import { HouseModal } from "@/ui/house-modal";
 import { Hud } from "@/ui/hud";
 import { MarketModal } from "@/ui/market-modal";
 import { economyService } from "@/services/economy-service";
+import { progressService } from "@/services/progress-service";
 import { PlantingModal } from "@/ui/planting-modal";
 
 const MIN_ZOOM = 0.45;
@@ -46,6 +47,7 @@ export class FarmScene extends Phaser.Scene {
   private plantingsByPlot = new Map<number, Planting>();
   private inventoryItems: InventoryItem[] = [];
   private balance = 0;
+  private level = 0;
 
   // Sprites visuais sobre os talhões
   private cropSprites = new Map<number, Phaser.GameObjects.Image>();
@@ -387,6 +389,7 @@ export class FarmScene extends Phaser.Scene {
 
       // Atualiza o inventário local
       await this.refreshInventory();
+      await this.refreshProgress(true);
     } catch {
       this.hud?.toast("Não foi possível plantar. Verifique se possui sementes disponíveis.");
     }
@@ -409,11 +412,12 @@ export class FarmScene extends Phaser.Scene {
       }
 
       this.hud?.toast(
-        `🌾 Colheita realizada! +${outcome.product_quantity} ${outcome.product_name} (+${outcome.seed_quantity} ${outcome.seed_name})`,
+        `🌾 Colheita realizada! +${outcome.product_quantity} ${outcome.product_name} (+${outcome.seed_quantity} ${outcome.seed_name}) · +${outcome.xp_gained} XP`,
       );
 
       await this.syncPlantings();
       await this.refreshInventory();
+      await this.refreshProgress(true);
     } catch {
       this.hud?.toast("Falha ao colher. Tente novamente.");
     }
@@ -441,6 +445,7 @@ export class FarmScene extends Phaser.Scene {
 
       await this.syncPlantings();
       await this.refreshInventory();
+      await this.refreshProgress(true);
     } catch {
       this.hud?.toast("Erro ao colher todos os talhões.");
     }
@@ -545,7 +550,12 @@ export class FarmScene extends Phaser.Scene {
       this.catalogCrops = crops;
       this.hud?.setFarm(property.name, property.plot_count);
 
-      await Promise.all([this.syncPlantings(), this.refreshInventory(), this.refreshBalance()]);
+      await Promise.all([
+        this.syncPlantings(),
+        this.refreshInventory(),
+        this.refreshBalance(),
+        this.refreshProgress(false),
+      ]);
     } catch {
       this.hud?.setFarm("Fazenda da Ilha", 6);
     }
@@ -576,6 +586,25 @@ export class FarmScene extends Phaser.Scene {
       this.hud?.setReadyHarvestCount(readyCount);
     } catch {
       // Ignora falhas temporárias de sincronização
+    }
+  }
+
+  /** Atualiza nível/XP no HUD; com ``announce`` avisa quando o nível sobe. */
+  private async refreshProgress(announce: boolean): Promise<void> {
+    if (!this.token) {
+      return;
+    }
+
+    try {
+      const progress = await progressService.get(this.token);
+      const leveledUp = announce && this.level > 0 && progress.level > this.level;
+      this.level = progress.level;
+      this.hud?.setProgress(progress);
+      if (leveledUp) {
+        this.hud?.toast(`⭐ Você alcançou o nível ${progress.level}!`);
+      }
+    } catch {
+      // Mantém o último progresso conhecido
     }
   }
 

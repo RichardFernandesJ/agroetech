@@ -12,6 +12,7 @@ from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.character import Character
+    from app.models.progress import PlayerProgress
     from app.models.property import Property
     from app.models.wallet import Wallet
 
@@ -36,6 +37,11 @@ class User(Base, TimestampMixin):
         cascade="all, delete-orphan",
     )
     wallet: Mapped[Wallet | None] = relationship(
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    progress: Mapped[PlayerProgress | None] = relationship(
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",

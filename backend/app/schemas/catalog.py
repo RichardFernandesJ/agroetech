@@ -13,6 +13,7 @@ class CropRead(BaseModel):
     max_cycles: int
     seed_price: int
     sell_price: int
+    harvest_xp: int
     seed_item: str
     product_item: str
 

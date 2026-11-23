@@ -150,7 +150,14 @@ como o gestor supremo da fazenda:
 - Fontes de moeda devem ter sumidouros equivalentes (sementes, construções,
   taxas, melhorias) para evitar inflação.
 
-## 7. Progressão (pós-MVP)
+## 7. Progressão
+
+**Implementado:** XP e nível (1 a 50) por jogador. Plantar rende 2 XP; colher rende
+XP por ciclo conforme a cultura. O HUD mostra nível e barra de XP, e avisa ao subir.
+
+**Planejado:** árvore de talentos, presets, guildas e disputas — ver `docs/TALENTS.md`.
+
+### Progressão (pós-MVP)
 
 - XP por plantio, colheita, fabricação e exploração.
 - Níveis desbloqueiam culturas, receitas, animais e expansões.

@@ -282,6 +282,24 @@ propriedade de outro jogador; `409` conflito de idempotência.
 
 O catálogo de culturas (`/catalog/crops`) agora inclui `seed_price` e `sell_price`.
 
+### Progressão (XP e nível)
+
+#### GET `/api/v1/progress` 🔒
+
+```json
+{ "level": 2, "xp": 60, "xp_into_level": 10, "xp_for_next": 100, "max_level": 50 }
+```
+
+XP total para o nível `L`: `25 * (L - 1) * L` (nível 2 = 50, nível 10 = 2.250, nível 50 = 61.250).
+O nível máximo é 50 e o XP não passa disso. O XP vem de:
+
+- plantar: 2 XP;
+- colher: `harvest_xp` da cultura por ciclo colhido (milho 8, cenoura 14, tomate 18,
+  morango 26, café 70).
+
+As respostas de colheita (`/plantings/{id}/harvest` e `/properties/{id}/harvest`)
+incluem `xp_gained`. O catálogo de culturas inclui `harvest_xp`.
+
 ## 7. Infra
 
 | Método | Rota | Descrição |
