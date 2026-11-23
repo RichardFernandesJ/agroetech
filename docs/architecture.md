@@ -80,6 +80,8 @@ agroetech/
 |---|---|
 | `src/config` | Variáveis de ambiente tipadas e configuração do `Phaser.Game`. |
 | `src/game/scenes` | `BootScene` (autenticação/carregamento) e `FarmScene` (visão aérea da ilha, câmera livre pan/zoom, ciclo de cliques). |
+| `src/ui` | Painéis DOM sobre o jogo. `ModalManager` garante um painel aberto por vez; cada painel recebe `onClose` e não conhece a cena. O HUD tem um **menu declarativo** (`HudMenuItem[]`): um sistema novo (estrutura, guilda, fábrica) entra com um item de menu e um painel. |
+| `src/ui/talents` | Árvore de talentos dividida por responsabilidade: `talent-map` (SVG com pan/zoom), `talent-sidebar` (detalhes), `talent-presets-bar` (builds) e `talent-rules` (regras de exibição; o servidor é a autoridade). `ui/talent-modal.ts` orquestra. |
 | `src/game/world` | Geração orgânica do mapa da ilha (`map.ts`), posicionamento de estruturas (`build-world.ts`) e texturas procedurais pixel art (`textures.ts`). |
 | `src/services` | Comunicação HTTP com a API (`propertyService`, `characterService`, etc.) e tratamento padronizado de erros. |
 | `src/state` | Gerenciamento de sessão JWT (`session.ts`) e estado local do jogador. |

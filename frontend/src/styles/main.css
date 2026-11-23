@@ -897,3 +897,25 @@ form {
   background: linear-gradient(90deg, #7bd88f, #f0c85a);
   transition: width 0.4s ease;
 }
+
+/* Botões genéricos dos painéis (mesmo visual do botão principal). */
+.btn {
+  padding: 10px 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cream);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--gold-strong), var(--gold));
+  color: #1a1408;
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}

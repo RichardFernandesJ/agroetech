@@ -5,12 +5,20 @@
  * acessível e não sofre com o zoom da câmera.
  */
 
+/** Atalho do menu principal. Estruturas e sistemas novos entram aqui. */
+export interface HudMenuItem {
+  id: string;
+  label: string;
+  title: string;
+  onClick: () => void;
+}
+
 export interface HudActions {
+  menu?: HudMenuItem[];
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetView?: () => void;
   onHarvestAll?: () => void;
-  onOpenMarket?: () => void;
 }
 
 export class Hud {
@@ -54,7 +62,9 @@ export class Hud {
     this.balanceElement.tabIndex = 0;
     this.balanceElement.title = "Abrir o mercado";
     this.balanceElement.textContent = "🪙 — AGC";
-    this.balanceElement.addEventListener("click", () => actions?.onOpenMarket?.());
+    this.balanceElement.addEventListener("click", () =>
+      actions?.menu?.find((item) => item.id === "market")?.onClick(),
+    );
 
     // Nível e barra de experiência.
     const levelRow = document.createElement("div");
@@ -130,7 +140,22 @@ export class Hud {
     this.toastElement.setAttribute("role", "status");
     this.toastElement.hidden = true;
 
-    this.root.append(card, hint, cameraControls, this.promptElement, this.toastElement);
+    // Menu principal: um botão por sistema (mercado, talentos, ...).
+    const menu = document.createElement("nav");
+    menu.className = "hud-menu";
+    menu.setAttribute("aria-label", "Menu do jogo");
+    for (const item of actions?.menu ?? []) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "hud-btn hud-menu-btn";
+      button.dataset.menu = item.id;
+      button.title = item.title;
+      button.textContent = item.label;
+      button.addEventListener("click", item.onClick);
+      menu.append(button);
+    }
+
+    this.root.append(card, hint, menu, cameraControls, this.promptElement, this.toastElement);
 
     const layer = document.getElementById("ui-layer");
     (layer ?? document.body).append(this.root);

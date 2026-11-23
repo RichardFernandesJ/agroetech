@@ -3,8 +3,8 @@
 Documento de design aprovado em 2026-11-23. Descreve o sistema de progressão por
 **Árvore de Talentos**, as **guildas** e o modelo de **disputas** do Agro & Tech.
 Entrega em fatias pequenas (ver `ROADMAP.md`, Fase 4.5 e seguintes).
-**Implementado:** fatia 1 (XP e níveis) e fatia 2 (motor de modificadores e talentos no
-servidor). Interface da árvore, guildas e disputas ainda não existem.
+**Implementado:** fatia 1 (XP e níveis), fatia 2 (motor de modificadores e talentos no
+servidor) e fatia 3 (interface da árvore). Guildas e disputas ainda não existem.
 
 ## 1. Princípios
 
@@ -164,3 +164,22 @@ confrontos repetidos; nível mínimo 10 para disputas; bônus de reconstrução.
   peso, revisar ou trocar o efeito.
 - A troca de preset não exige estar na fazenda (a API não tem outro contexto de
   localização hoje); a regra entra com a interface.
+
+## 12. Estado da fatia 3 (implementada)
+
+- Abre pelo botão **🌳 Talentos** do menu do HUD (ou Esc/✕/clique fora para fechar).
+- Mapa em SVG: pan por arrasto, zoom por roda do mouse, pinça no toque e botões
+  `+`, `−`, `⌂` (centralizar nos talentos) e `⤢` (mapa inteiro). Um clique no fundo
+  limpa a seleção; arrastar não seleciona talentos por engano.
+- Estados visuais: adquirido (preenchido, linha acesa), disponível (halo pulsante,
+  linha dourada), bloqueado (apagado) e ramo "em breve". Animação ao adquirir.
+- Tooltip no hover, painel lateral com custo, nível, benefícios e o que ainda falta
+  (a lista de requisitos pendentes é calculada no cliente só para exibir; o servidor
+  continua validando tudo).
+- Cabeçalho com pontos disponíveis e progresso por especialização.
+- Rodapé com presets (ativar, criar, renomear, excluir), indicação de recarga,
+  espaços bloqueados por nível e botão de redefinição com o custo.
+- Layout responsivo: em telas estreitas o painel lateral vai para baixo do mapa.
+- Cobertura: E2E `frontend/e2e/talents.spec.ts` (mapa com 27 nós, detalhes,
+  requisito bloqueado, aquisição, pontos, criação de preset e fechamento).
+

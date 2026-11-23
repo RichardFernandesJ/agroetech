@@ -15,7 +15,7 @@ mas falta escopo da fase.
 | 2 | Ilha e Câmera Livre (God-View) | ✅ Concluída |
 | 3 | Agricultura Point & Click | ✅ Concluída |
 | 4 | Economia básica (AgroCoin & Mercado) | 🟡 Em andamento (núcleo pronto) |
-| 4.5 | Progressão e Talentos (XP, árvore, presets) | 🟡 Em andamento (fatias 1 e 2 prontas) |
+| 4.5 | Progressão e Talentos (XP, árvore, presets) | 🟡 Em andamento (fatias 1 a 3 prontas) |
 | 5 | Produção (animais, construções, fabricação) | ⬜ Não iniciada |
 | 6 | Multiplayer econômico | ⬜ Não iniciada |
 | 7 | Expansão (cidades, regiões, profissões) | ⬜ Não iniciada |
@@ -79,7 +79,7 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 - [x] Fatia 1 — XP e níveis (1 a 50), XP por plantio e colheita, barra no HUD.
 - [x] Fatia 2 — Motor de modificadores e talentos (Agricultura e Comércio), pontos, presets, redefinição e simulador de paridade.
-- [ ] Fatia 3 — Interface da árvore de talentos (mapa com pan/zoom).
+- [x] Fatia 3 — Interface da árvore de talentos (mapa SVG com pan/zoom, painel lateral, presets).
 - [ ] Fatia 4 — Demais ramos, conforme as mecânicas da Fase 5.
 
 ## Fase 5 — Produção ⬜
@@ -132,10 +132,13 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Pendências técnicas
 
+- Dividir `FarmScene.ts` (≈650 linhas): extrair renderização dos talhões e interações do mundo.
+- Painel de criação de personagem ainda tem campos de avatar (tom de pele, cabelo, roupa).
 - Ampliar E2E Playwright: plantio e colheita pela UI (hoje cobre cadastro, perfil, HUD e sessão).
 - Pasta `workers/` do backend (necessária a partir da Fase 5).
 
 ## Próxima entrega recomendada
 
-**Fatia 3 da Fase 4.5:** interface da árvore de talentos (mapa com pan/zoom, painel
-lateral, presets). A primeira construção melhorável (Fase 5) fecha o MVP.
+**Fase 5 (Produção), pelas estruturas:** a primeira construção melhorável fecha o MVP;
+depois animais, fabricação e receitas, reaproveitando o menu do HUD, o `ModalManager`
+e o motor de modificadores.

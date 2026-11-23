@@ -2,6 +2,7 @@ import Phaser from "phaser";
 
 import { GAME_CONFIG } from "@/config/game";
 import "@/styles/main.css";
+import "@/styles/talents.css";
 
 const game = new Phaser.Game(GAME_CONFIG);
 

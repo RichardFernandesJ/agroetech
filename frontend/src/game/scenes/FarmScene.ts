@@ -21,6 +21,8 @@ import { session } from "@/state/session";
 import { HouseModal } from "@/ui/house-modal";
 import { Hud } from "@/ui/hud";
 import { MarketModal } from "@/ui/market-modal";
+import { ModalManager } from "@/ui/modal-manager";
+import { TalentModal } from "@/ui/talent-modal";
 import { economyService } from "@/services/economy-service";
 import { progressService } from "@/services/progress-service";
 import { PlantingModal } from "@/ui/planting-modal";
@@ -53,7 +55,7 @@ export class FarmScene extends Phaser.Scene {
   private cropSprites = new Map<number, Phaser.GameObjects.Image>();
   private badgeSprites = new Map<number, Phaser.GameObjects.Image>();
 
-  private activeModal: { destroy: () => void } | null = null;
+  private readonly modals = new ModalManager();
   private syncTimer?: Phaser.Time.TimerEvent;
 
   // Estado de navegação e pan
@@ -100,7 +102,20 @@ export class FarmScene extends Phaser.Scene {
       onZoomOut: () => this.zoomOut(),
       onResetView: () => this.resetView(),
       onHarvestAll: () => this.harvestAllPlots(),
-      onOpenMarket: () => this.openMarketModal(),
+      menu: [
+        {
+          id: "market",
+          label: "🏪 Mercado",
+          title: "Comprar sementes e vender safras",
+          onClick: () => this.openMarketModal(),
+        },
+        {
+          id: "talents",
+          label: "🌳 Talentos",
+          title: "Árvore de talentos e builds",
+          onClick: () => this.openTalentModal(),
+        },
+      ],
     });
 
     void this.initializeGameData(character);
@@ -308,24 +323,21 @@ export class FarmScene extends Phaser.Scene {
   }
 
   private openPlantingModal(plotIndex: number): void {
-    this.activeModal?.destroy();
-
     const seeds = this.inventoryItems.filter((i) => i.category === "seed");
 
-    this.activeModal = new PlantingModal({
-      plotIndex,
-      seeds,
-      crops: this.catalogCrops,
-      onSelectCrop: (cropId) => {
-        this.activeModal?.destroy();
-        this.activeModal = null;
-        void this.executePlant(plotIndex, cropId);
-      },
-      onClose: () => {
-        this.activeModal?.destroy();
-        this.activeModal = null;
-      },
-    });
+    this.modals.open(
+      (close) =>
+        new PlantingModal({
+          plotIndex,
+          seeds,
+          crops: this.catalogCrops,
+          onSelectCrop: (cropId) => {
+            close();
+            void this.executePlant(plotIndex, cropId);
+          },
+          onClose: close,
+        }),
+    );
   }
 
   private openHouseModal(): void {
@@ -334,19 +346,19 @@ export class FarmScene extends Phaser.Scene {
       return;
     }
 
-    this.activeModal?.destroy();
-    this.activeModal = new HouseModal({
-      property: this.property,
-      farmerName: character.name,
-      onLogout: () => {
-        session.clear();
-        this.scene.start("BootScene");
-      },
-      onClose: () => {
-        this.activeModal?.destroy();
-        this.activeModal = null;
-      },
-    });
+    const property = this.property;
+    this.modals.open(
+      (close) =>
+        new HouseModal({
+          property,
+          farmerName: character.name,
+          onLogout: () => {
+            session.clear();
+            this.scene.start("BootScene");
+          },
+          onClose: close,
+        }),
+    );
   }
 
   private openMarketModal(): void {
@@ -354,21 +366,38 @@ export class FarmScene extends Phaser.Scene {
       return;
     }
 
-    this.activeModal?.destroy();
-    this.activeModal = new MarketModal({
-      propertyId: this.property.id,
-      token: this.token,
-      balance: this.balance,
-      onChange: (balance, items) => {
-        this.balance = balance;
-        this.inventoryItems = items;
-        this.hud?.setBalance(balance);
-      },
-      onClose: () => {
-        this.activeModal?.destroy();
-        this.activeModal = null;
-      },
-    });
+    const { id: propertyId } = this.property;
+    const token = this.token;
+    this.modals.open(
+      (close) =>
+        new MarketModal({
+          propertyId,
+          token,
+          balance: this.balance,
+          onChange: (balance, items) => {
+            this.balance = balance;
+            this.inventoryItems = items;
+            this.hud?.setBalance(balance);
+          },
+          onClose: close,
+        }),
+    );
+  }
+
+  private openTalentModal(): void {
+    const token = this.token;
+    if (!token) {
+      return;
+    }
+
+    this.modals.open(
+      (close) =>
+        new TalentModal({
+          token,
+          onWalletChange: () => void this.refreshBalance(),
+          onClose: close,
+        }),
+    );
   }
 
   private async executePlant(plotIndex: number, cropId: string): Promise<void> {
@@ -640,7 +669,7 @@ export class FarmScene extends Phaser.Scene {
 
   private handleShutdown(): void {
     this.syncTimer?.remove();
-    this.activeModal?.destroy();
+    this.modals.close();
     this.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this);
     this.hud?.destroy();
     this.hud = undefined;

@@ -91,7 +91,7 @@ _BRANCH_BY_ID = {branch.id: branch for branch in BRANCHES}
 
 
 def _position(angle_deg: float, tier: int) -> tuple[int, int]:
-    radius = 110 + tier * 120
+    radius = 140 + tier * 130
     radians = math.radians(angle_deg)
     return (
         MAP_CENTER[0] + round(radius * math.cos(radians)),
@@ -115,7 +115,7 @@ def _node(
     angle: float | None = None,
 ) -> TalentNode:
     if angle is None:
-        angle = _BRANCH_BY_ID[branch].angle + lane * 11
+        angle = _BRANCH_BY_ID[branch].angle + lane * 14
     if branch_points is None:
         gate = BRANCH_GATES[tier]
         branch_points = ((branch, gate),) if gate and branch in _BRANCH_BY_ID else ()

@@ -11,6 +11,22 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.6.0] — 2026-11-23
+
+### Adicionado
+
+- **Árvore de Talentos (interface):** mapa SVG com pan, zoom (roda, pinça e botões), nós conectados por linhas, estados adquirido/disponível/bloqueado, tooltip, painel lateral com benefícios e requisitos pendentes, pontos disponíveis, progresso por ramo e animação ao adquirir.
+- Presets na parte inferior: ativar, criar, renomear, excluir, recarga de troca, espaços por nível e redefinição com custo.
+- Menu do HUD declarativo (`HudMenuItem[]`) com Mercado e Talentos; saldo continua abrindo o mercado.
+- `ModalManager`: um único painel aberto por vez, ciclo de vida centralizado.
+- E2E de talentos (`e2e/talents.spec.ts`).
+
+### Alterado
+
+- `FarmScene` usa o `ModalManager` (menos código repetido de abrir/fechar painéis).
+- Layout do mapa de talentos com mais espaço entre camadas e nós.
+- Estilos `.btn` e `.btn-primary` passaram a existir (os painéis antigos os usavam sem estilo).
+
 ## [0.5.0] — 2026-11-23
 
 ### Adicionado
