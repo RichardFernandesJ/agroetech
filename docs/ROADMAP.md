@@ -15,7 +15,7 @@ mas falta escopo da fase.
 | 2 | Ilha e Câmera Livre (God-View) | ✅ Concluída |
 | 3 | Agricultura Point & Click | ✅ Concluída |
 | 4 | Economia básica (AgroCoin & Mercado) | 🟡 Em andamento (núcleo pronto) |
-| 4.5 | Progressão e Talentos (XP, árvore, presets) | 🟡 Em andamento (fatia 1 pronta) |
+| 4.5 | Progressão e Talentos (XP, árvore, presets) | 🟡 Em andamento (fatias 1 e 2 prontas) |
 | 5 | Produção (animais, construções, fabricação) | ⬜ Não iniciada |
 | 6 | Multiplayer econômico | ⬜ Não iniciada |
 | 7 | Expansão (cidades, regiões, profissões) | ⬜ Não iniciada |
@@ -78,7 +78,7 @@ Desenho completo em [`TALENTS.md`](TALENTS.md). Inserida antes da Fase 5 por dec
 de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 - [x] Fatia 1 — XP e níveis (1 a 50), XP por plantio e colheita, barra no HUD.
-- [ ] Fatia 2 — Motor de modificadores e talentos (Agricultura e Comércio), pontos, presets e redefinição.
+- [x] Fatia 2 — Motor de modificadores e talentos (Agricultura e Comércio), pontos, presets, redefinição e simulador de paridade.
 - [ ] Fatia 3 — Interface da árvore de talentos (mapa com pan/zoom).
 - [ ] Fatia 4 — Demais ramos, conforme as mecânicas da Fase 5.
 
@@ -137,5 +137,5 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Próxima entrega recomendada
 
-**Fatia 2 da Fase 4.5:** motor de modificadores e talentos no servidor. A primeira
-construção melhorável (Fase 5) fecha o MVP.
+**Fatia 3 da Fase 4.5:** interface da árvore de talentos (mapa com pan/zoom, painel
+lateral, presets). A primeira construção melhorável (Fase 5) fecha o MVP.

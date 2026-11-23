@@ -12,6 +12,7 @@ from app.api.v1.routes import (
     production,
     progress,
     properties,
+    talents,
     wallet,
 )
 
@@ -26,3 +27,4 @@ api_router.include_router(catalog.router)
 api_router.include_router(wallet.router)
 api_router.include_router(market.router)
 api_router.include_router(progress.router)
+api_router.include_router(talents.router)

@@ -27,6 +27,6 @@ def product_prices() -> dict[str, int]:
     return {crop.product_item: crop.sell_price for crop in CROPS.values()}
 
 
-def sale_fee(gross: int) -> int:
+def sale_fee(gross: int, fee_bp: int = SALE_FEE_BASIS_POINTS) -> int:
     """Taxa em AGC, arredondada para baixo (nunca cobra mais que o devido)."""
-    return gross * SALE_FEE_BASIS_POINTS // 10_000
+    return gross * fee_bp // 10_000

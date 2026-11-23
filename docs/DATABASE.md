@@ -178,6 +178,36 @@ O nível é derivado do XP (`game/progression.py`), nunca armazenado.
 Constraints: `uq_player_progress_user_id`, `ck_player_progress_xp_non_negative`.
 Migração: `0004_progress`.
 
+### `talent_presets`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `user_id` | UUID | FK `users.id`, CASCADE, indexado |
+| `name` | VARCHAR(30) | NOT NULL |
+| `slot` | INTEGER | NOT NULL, `>= 1` |
+| `is_active` | BOOLEAN | NOT NULL |
+| `last_activated_at` | TIMESTAMPTZ | nulo até a primeira troca |
+
+Constraints: `uq_talent_presets_user_slot (user_id, slot)` e índice único parcial
+`uq_talent_presets_active (user_id) WHERE is_active` (no máximo um preset ativo).
+
+### `preset_nodes`
+
+Talentos adquiridos por preset: `preset_id` (FK, CASCADE) + `node_id` (VARCHAR 60),
+único por `(preset_id, node_id)`. O catálogo de talentos vive em código
+(`game/talents.py`).
+
+### `talent_respecs`
+
+Auditoria de redefinições: `user_id`, `preset_id`, `nodes_removed`, `cost`,
+`performed_at`.
+
+### `plantings` (colunas novas)
+
+`grow_seconds` (INTEGER, nulo = usa o tempo do catálogo) e `modifiers` (JSON com os
+bônus em pontos-base vigentes no plantio). Migração: `0005_talents`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:

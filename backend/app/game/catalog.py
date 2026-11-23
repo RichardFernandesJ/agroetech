@@ -138,5 +138,11 @@ def _build_item_catalog() -> dict[str, ItemDefinition]:
 ITEM_CATALOG: dict[str, ItemDefinition] = _build_item_catalog()
 
 
+def crop_id_for_item(item_id: str) -> str | None:
+    """Cultura de um item (``seed_milho``/``crop_milho`` -> ``milho``)."""
+    _, _, crop_id = item_id.partition("_")
+    return crop_id if crop_id in CROPS else None
+
+
 def get_item(item_id: str) -> ItemDefinition | None:
     return ITEM_CATALOG.get(item_id)

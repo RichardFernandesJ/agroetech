@@ -12,6 +12,8 @@ export interface MarketOffer {
   category: string;
   buy_price: number | null;
   sell_price: number | null;
+  /** Bônus de talentos sobre o preço de venda, em pontos-base (10.000 = 100%). */
+  sell_bonus_bp: number;
 }
 
 export interface MarketOffers {

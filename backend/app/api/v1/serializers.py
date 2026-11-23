@@ -7,6 +7,7 @@ from datetime import datetime
 
 from app.core.time import ensure_utc, utcnow
 from app.game.catalog import CropDefinition, get_crop, get_item
+from app.game.modifiers import BP, Stat
 from app.game.status import PlantingStatus
 from app.models.character import Character
 from app.models.inventory import InventoryItem
@@ -106,11 +107,9 @@ def serialize_planting(planting: Planting, now: datetime | None = None) -> Plant
     else:
         crop_name = crop.name
         max_cycles = crop.max_cycles
-        expected_yield = (
-            planting.stored_cycles * crop.yield_quantity
-            if planting.stored_cycles > 0
-            else crop.yield_quantity
-        )
+        yield_bp = (planting.modifiers or {}).get(Stat.CROP_YIELD, 0)
+        cycles = max(1, planting.stored_cycles)
+        expected_yield = cycles * crop.yield_quantity * (BP + yield_bp) // BP
 
     return PlantingRead(
         id=planting.id,

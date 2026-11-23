@@ -9,12 +9,14 @@ import uuid
 from dataclasses import dataclass
 
 from app.core.exceptions import ConflictError, GameRuleError
-from app.game.catalog import get_item
-from app.game.economy import product_prices, sale_fee, seed_prices
+from app.game.catalog import crop_id_for_item, get_item
+from app.game.economy import SALE_FEE_BASIS_POINTS, product_prices, sale_fee, seed_prices
+from app.game.modifiers import BP, Stat, effective_fee_bp
 from app.models.user import User
 from app.models.wallet import Wallet, WalletLedgerEntry
 from app.services.inventory_service import InventoryService
 from app.services.property_service import PropertyService
+from app.services.talent_service import TalentService
 from app.services.wallet_service import WalletService
 
 KIND_PURCHASE = "seed_purchase"
@@ -34,10 +36,12 @@ class MarketService:
         properties: PropertyService,
         inventory: InventoryService,
         wallets: WalletService,
+        talents: TalentService,
     ) -> None:
         self.properties = properties
         self.inventory = inventory
         self.wallets = wallets
+        self.talents = talents
 
     async def buy_seeds(
         self,
@@ -95,8 +99,12 @@ class MarketService:
             label=definition.name if definition else item_id,
         )
 
-        gross = unit_price * quantity
-        fee = sale_fee(gross)
+        # Talentos: bônus no preço (por cultura) e redução da taxa, com tetos no motor.
+        modifiers = await self.talents.modifiers_for(user.id)
+        price_bp = modifiers.total_bp(Stat.SELL_PRICE, crop_id_for_item(item_id))
+        fee_bp = effective_fee_bp(SALE_FEE_BASIS_POINTS, modifiers.total_bp(Stat.MARKET_FEE))
+        gross = unit_price * quantity * (BP + price_bp) // BP
+        fee = sale_fee(gross, fee_bp)
         entry = await self.wallets.apply(
             wallet,
             kind=KIND_SALE,

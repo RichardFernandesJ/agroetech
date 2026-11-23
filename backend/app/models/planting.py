@@ -12,6 +12,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -60,6 +61,11 @@ class Planting(Base, TimestampMixin):
 
     planted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     next_ready_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    # Tempo de ciclo e bônus vigentes no plantio (talentos). Gravados ao plantar:
+    # trocar de preset nunca altera plantações em andamento.
+    grow_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    modifiers: Mapped[dict[str, int] | None] = mapped_column(JSON, nullable=True)
 
     cycles_done: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     stored_cycles: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

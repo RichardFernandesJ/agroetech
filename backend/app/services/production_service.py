@@ -79,6 +79,7 @@ class ProductionService:
                 now=now,
                 window_start=window_start,
                 max_stored_cycles=settings.offline_max_cycles_per_planting,
+                grow_seconds=planting.grow_seconds,
             )
 
             if simulation.newly_stored_cycles:

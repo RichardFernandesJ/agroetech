@@ -2,8 +2,9 @@
 
 Documento de design aprovado em 2026-11-23. Descreve o sistema de progressão por
 **Árvore de Talentos**, as **guildas** e o modelo de **disputas** do Agro & Tech.
-Entrega em fatias pequenas (ver `ROADMAP.md`, Fase 4.5 e seguintes). Nada além da
-fatia 1 (XP e níveis) está implementado ainda.
+Entrega em fatias pequenas (ver `ROADMAP.md`, Fase 4.5 e seguintes).
+**Implementado:** fatia 1 (XP e níveis) e fatia 2 (motor de modificadores e talentos no
+servidor). Interface da árvore, guildas e disputas ainda não existem.
 
 ## 1. Princípios
 
@@ -27,12 +28,12 @@ correspondente existir; um teste impede talentos para estatísticas não impleme
 
 | Estatística | Mecânica | Teto |
 |---|---|---|
-| `crop_yield` | produção por colheita | +60% |
-| `crop_grow_time` | tempo de crescimento | −40% |
-| `extra_harvest_chance` | colheita extra | 25% |
+| `crop_yield` | produção por colheita | +30% |
+| `crop_grow_time` | tempo de crescimento | −20% |
+| `extra_harvest_chance` | colheita extra | 10% |
 | `seed_save_chance` | economia de semente | 30% |
 | `xp_gain` | XP | +50% |
-| `sell_price` | preço de venda ao entreposto | +25% |
+| `sell_price` | preço de venda ao entreposto | +45% |
 | `market_fee` | taxa de venda | mínimo 1% |
 
 Regras:
@@ -145,3 +146,21 @@ confrontos repetidos; nível mínimo 10 para disputas; bônus de reconstrução.
 4. Demais ramos, conforme a Fase 5 entrega as mecânicas.
 5. Guildas e talentos coletivos (Fase 6).
 6. Disputas e expedições (Fases 6 e 7).
+
+## 11. Estado da fatia 2 (implementada)
+
+- Catálogo: 26 talentos em Agricultura e Comércio, mais 1 híbrido (Contratos de Safra).
+  Os outros quatro ramos aparecem no mapa como indisponíveis.
+- Pontos: 1 por nível a partir do nível 2. Camadas pedem nível mínimo 2/5/10/20/35 e
+  pontos já investidos no ramo 0/2/8/16/24. Um talento mestre por ramo (exclusivo).
+- Presets: 1 espaço + 1 a cada 10 níveis (máx. 5). Trocar de build tem recarga de 1 h
+  (a primeira troca é livre). Redefinir: primeira grátis, depois `nível × 5` AGC.
+  A troca fica bloqueada quando `is_build_locked` for verdadeiro (gancho das disputas).
+- Paridade: o simulador `tests/unit/balance.py` compara três builds de referência no
+  nível 50. Hoje todas ficam entre +81% e +96% de AGC/hora sobre a base (diferença de
+  8%, meta ±10%), com XP/hora dentro de 15%.
+- Observação de balanceamento: como toda colheita devolve uma semente, **Economia de
+  Sementes** quase não afeta o lucro; é um talento de conveniência. Se ganhar mais
+  peso, revisar ou trocar o efeito.
+- A troca de preset não exige estar na fazenda (a API não tem outro contexto de
+  localização hoje); a regra entra com a interface.

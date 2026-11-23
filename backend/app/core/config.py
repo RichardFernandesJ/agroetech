@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     offline_max_hours: int = 12
     offline_max_cycles_per_planting: int = 8
 
+    # Talentos
+    talent_switch_cooldown_seconds: int = 3600
+    talent_reset_cost_per_level: int = 5
+
     # Limites de propriedade
     max_plots_per_property: int = 12
     default_plots_per_property: int = 6

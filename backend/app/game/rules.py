@@ -39,6 +39,7 @@ def simulate_growth(
     now: datetime,
     window_start: datetime,
     max_stored_cycles: int,
+    grow_seconds: int | None = None,
 ) -> GrowthSimulation:
     next_ready_at = ensure_utc(next_ready_at)
     now = ensure_utc(now)
@@ -53,7 +54,7 @@ def simulate_growth(
         status = PlantingStatus.READY if stored_cycles > 0 else PlantingStatus.GROWING
         return GrowthSimulation(0, 0, 0, next_ready_at, status)
 
-    interval = timedelta(seconds=crop.grow_seconds)
+    interval = timedelta(seconds=grow_seconds or crop.grow_seconds)
     completed = int((now - next_ready_at) / interval) + 1
 
     # Ciclos que amadureceram antes do início da janela offline são perdidos.

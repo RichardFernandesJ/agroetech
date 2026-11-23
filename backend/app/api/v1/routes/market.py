@@ -5,9 +5,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Header
 
-from app.api.deps import CurrentUser, MarketServiceDep
-from app.game.catalog import ITEM_CATALOG, get_item
+from app.api.deps import CurrentUser, MarketServiceDep, TalentServiceDep
+from app.game.catalog import ITEM_CATALOG, crop_id_for_item, get_item
 from app.game.economy import SALE_FEE_BASIS_POINTS, product_prices, seed_prices
+from app.game.modifiers import Stat, effective_fee_bp
 from app.schemas.market import MarketOffersRead, OfferRead, TradeRead, TradeRequest
 from app.services.market_service import TradeResult
 
@@ -36,7 +37,8 @@ def _to_trade_read(result: TradeResult) -> TradeRead:
         item_name=definition.name if definition else (entry.item_id or ""),
         quantity=quantity,
         unit_price=unit_price,
-        gross=unit_price * quantity,
+        # Venda: bruto = líquido + taxa. Compra: bruto = valor debitado.
+        gross=entry.amount + entry.fee if entry.amount > 0 else -entry.amount,
         fee=entry.fee,
         amount=entry.amount,
         balance=result.balance,
@@ -49,9 +51,13 @@ def _to_trade_read(result: TradeResult) -> TradeRead:
     response_model=MarketOffersRead,
     summary="Preços de compra e venda do entreposto",
 )
-async def list_offers(_: CurrentUser) -> MarketOffersRead:
+async def list_offers(
+    current_user: CurrentUser,
+    talents: TalentServiceDep,
+) -> MarketOffersRead:
     buy = seed_prices()
     sell = product_prices()
+    modifiers = await talents.modifiers_for(current_user.id)
     offers = [
         OfferRead(
             item_id=item.id,
@@ -59,11 +65,17 @@ async def list_offers(_: CurrentUser) -> MarketOffersRead:
             category=item.category,
             buy_price=buy.get(item.id),
             sell_price=sell.get(item.id),
+            sell_bonus_bp=(
+                modifiers.total_bp(Stat.SELL_PRICE, crop_id_for_item(item.id))
+                if item.id in sell
+                else 0
+            ),
         )
         for item in ITEM_CATALOG.values()
         if item.id in buy or item.id in sell
     ]
-    return MarketOffersRead(fee_basis_points=SALE_FEE_BASIS_POINTS, offers=offers)
+    fee_bp = effective_fee_bp(SALE_FEE_BASIS_POINTS, modifiers.total_bp(Stat.MARKET_FEE))
+    return MarketOffersRead(fee_basis_points=fee_bp, offers=offers)
 
 
 @router.post(

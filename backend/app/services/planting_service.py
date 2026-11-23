@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ConflictError, GameRuleError, NotFoundError
 from app.core.time import utcnow
 from app.game.catalog import get_crop, get_item
+from app.game.modifiers import Stat, roll, scale, scaled_seconds, seeded_rng
 from app.game.progression import PLANT_XP
 from app.game.status import PlantingStatus
 from app.models.planting import Planting
@@ -20,6 +21,7 @@ from app.services.inventory_service import InventoryService
 from app.services.production_service import ProductionService
 from app.services.progress_service import ProgressService
 from app.services.property_service import PropertyService
+from app.services.talent_service import TalentService
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +49,7 @@ class PlantingService:
         inventory: InventoryService,
         production: ProductionService,
         progress: ProgressService,
+        talents: TalentService,
     ) -> None:
         self.session = session
         self.properties = properties
@@ -54,6 +57,7 @@ class PlantingService:
         self.inventory = inventory
         self.production = production
         self.progress = progress
+        self.talents = talents
 
     async def list_plantings(
         self,
@@ -95,19 +99,31 @@ class PlantingService:
             label=f"sementes de {crop.name.lower()}",
         )
 
+        # Bônus de talentos vigentes agora; gravados no plantio (ver Planting.modifiers).
+        modifiers = (await self.talents.modifiers_for(owner_id)).snapshot(crop.id)
+        planting_id = uuid.uuid4()
+        rng = seeded_rng("plant", planting_id)
+        if roll(modifiers[Stat.SEED_SAVE_CHANCE], rng):
+            await self.inventory.add(property_.id, crop.seed_item, 1)
+        grow_seconds = scaled_seconds(crop.grow_seconds, modifiers[Stat.CROP_GROW_TIME])
+
         now = utcnow()
         planting = Planting(
+            id=planting_id,
             property_id=property_.id,
             crop_id=crop.id,
             plot_index=payload.plot_index,
             planted_at=now,
-            next_ready_at=now + timedelta(seconds=crop.grow_seconds),
+            next_ready_at=now + timedelta(seconds=grow_seconds),
+            grow_seconds=grow_seconds,
+            modifiers=modifiers,
             cycles_done=0,
             stored_cycles=0,
             status=PlantingStatus.GROWING.value,
         )
         await self.plantings.add(planting)
-        await self.progress.grant(property_.owner_id, PLANT_XP)
+        plant_xp = scale(PLANT_XP, modifiers[Stat.XP_GAIN], rng)
+        await self.progress.grant(property_.owner_id, plant_xp)
         return planting
 
     async def harvest(
@@ -148,7 +164,16 @@ class PlantingService:
             raise GameRuleError("Este plantio ainda não tem colheita pronta.")
 
         cycles = planting.stored_cycles
-        product_quantity = cycles * crop.yield_quantity
+        snapshot = planting.modifiers or {}
+        rng = seeded_rng("harvest", planting.id, planting.cycles_done)
+        product_quantity = scale(
+            cycles * crop.yield_quantity, snapshot.get(Stat.CROP_YIELD, 0), rng
+        )
+        extra_chance = snapshot.get(Stat.EXTRA_HARVEST_CHANCE, 0)
+        product_quantity += sum(
+            crop.yield_quantity for _ in range(cycles) if roll(extra_chance, rng)
+        )
+        xp_amount = scale(cycles * crop.harvest_xp, snapshot.get(Stat.XP_GAIN, 0), rng)
         seed_quantity = cycles * crop.seed_yield
 
         await self.inventory.add(property_.id, crop.product_item, product_quantity)
@@ -163,7 +188,7 @@ class PlantingService:
 
         await self.session.flush()
 
-        grant = await self.progress.grant(property_.owner_id, cycles * crop.harvest_xp)
+        grant = await self.progress.grant(property_.owner_id, xp_amount)
 
         product = get_item(crop.product_item)
         seed = get_item(crop.seed_item)

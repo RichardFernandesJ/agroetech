@@ -4,7 +4,9 @@ from fastapi import APIRouter
 
 from app.api.v1.serializers import serialize_crop
 from app.game.catalog import CROPS, ITEM_CATALOG
+from app.game.talents import BRANCHES, MAP_CENTER, NODES, TIER_NAMES
 from app.schemas.catalog import CropRead, ItemRead
+from app.schemas.talent import BranchRead, EffectRead, TalentCatalogRead, TalentNodeRead
 
 router = APIRouter(prefix="/catalog", tags=["Catálogo"])
 
@@ -25,3 +27,48 @@ async def list_items() -> list[ItemRead]:
         )
         for item in ITEM_CATALOG.values()
     ]
+
+
+@router.get(
+    "/talents",
+    response_model=TalentCatalogRead,
+    summary="Mapa de talentos: ramos, nós, requisitos e posições",
+)
+async def list_talents() -> TalentCatalogRead:
+    return TalentCatalogRead(
+        center_x=MAP_CENTER[0],
+        center_y=MAP_CENTER[1],
+        branches=[
+            BranchRead(
+                id=branch.id,
+                name=branch.name,
+                description=branch.description,
+                available=branch.available,
+                angle=branch.angle,
+            )
+            for branch in BRANCHES
+        ],
+        nodes=[
+            TalentNodeRead(
+                id=node.id,
+                name=node.name,
+                description=node.description,
+                branch=node.branch,
+                tier=node.tier,
+                tier_name=TIER_NAMES[node.tier],
+                cost=node.cost,
+                min_level=node.min_level,
+                requires=list(node.requires),
+                requires_any=list(node.requires_any),
+                branch_points=dict(node.branch_points),
+                exclusive_group=node.exclusive_group,
+                effects=[
+                    EffectRead(stat=e.stat, value_bp=e.value_bp, scope=e.scope)
+                    for e in node.effects
+                ],
+                x=node.x,
+                y=node.y,
+            )
+            for node in NODES
+        ],
+    )

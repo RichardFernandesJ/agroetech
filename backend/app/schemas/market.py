@@ -18,6 +18,8 @@ class OfferRead(BaseModel):
     buy_price: int | None
     # Preço recebido pelo jogador ao vender, antes da taxa (None = não compra).
     sell_price: int | None
+    # Bônus de talentos sobre o preço de venda, em pontos-base (10.000 = 100%).
+    sell_bonus_bp: int = 0
 
 
 class MarketOffersRead(BaseModel):

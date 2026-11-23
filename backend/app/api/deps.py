@@ -16,6 +16,7 @@ from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.planting_repository import PlantingRepository
 from app.repositories.progress_repository import ProgressRepository
 from app.repositories.property_repository import PropertyRepository
+from app.repositories.talent_repository import TalentRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.wallet_repository import WalletRepository
 from app.services.auth_service import AuthService
@@ -26,6 +27,7 @@ from app.services.planting_service import PlantingService
 from app.services.production_service import ProductionService
 from app.services.progress_service import ProgressService
 from app.services.property_service import PropertyService
+from app.services.talent_service import TalentService
 from app.services.wallet_service import WalletService
 
 bearer_scheme = HTTPBearer(
@@ -76,17 +78,26 @@ def get_wallet_service(db: DbSession) -> WalletService:
     return WalletService(db, WalletRepository(db))
 
 
+def get_progress_service(db: DbSession) -> ProgressService:
+    return ProgressService(db, ProgressRepository(db))
+
+
+def get_talent_service(db: DbSession) -> TalentService:
+    return TalentService(
+        TalentRepository(db),
+        ProgressService(db, ProgressRepository(db)),
+        WalletService(db, WalletRepository(db)),
+    )
+
+
 def get_market_service(
     db: DbSession,
     properties: Annotated[PropertyService, Depends(get_property_service)],
     inventory: Annotated[InventoryService, Depends(get_inventory_service)],
     wallets: Annotated[WalletService, Depends(get_wallet_service)],
+    talents: Annotated[TalentService, Depends(get_talent_service)],
 ) -> MarketService:
-    return MarketService(properties, inventory, wallets)
-
-
-def get_progress_service(db: DbSession) -> ProgressService:
-    return ProgressService(db, ProgressRepository(db))
+    return MarketService(properties, inventory, wallets, talents)
 
 
 def get_character_service(
@@ -111,6 +122,7 @@ def get_planting_service(
         inventory=InventoryService(db, InventoryRepository(db)),
         production=production,
         progress=ProgressService(db, ProgressRepository(db)),
+        talents=get_talent_service(db),
     )
 
 
@@ -123,3 +135,4 @@ CharacterServiceDep = Annotated[CharacterService, Depends(get_character_service)
 WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
 MarketServiceDep = Annotated[MarketService, Depends(get_market_service)]
 ProgressServiceDep = Annotated[ProgressService, Depends(get_progress_service)]
+TalentServiceDep = Annotated[TalentService, Depends(get_talent_service)]

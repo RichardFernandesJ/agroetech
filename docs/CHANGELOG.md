@@ -11,6 +11,17 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.5.0] — 2026-11-23
+
+### Adicionado
+
+- **Motor de modificadores** (`game/modifiers.py`): soma de bônus por fonte e escopo (cultura), tetos por estatística, sorteios determinísticos.
+- **Talentos no servidor:** catálogo de 27 talentos (Agricultura, Comércio e um híbrido), pontos por nível, requisitos, talento mestre exclusivo, presets (até 5), recarga de troca e redefinição (primeira grátis; depois `nível × 5` AGC). Migração `0005_talents`.
+- Endpoints `GET /catalog/talents`, `GET /talents`, `POST /talents/allocate`, `POST /talents/reset` e `/talents/presets`.
+- Efeitos reais: tempo de crescimento, produção, colheita extra, XP e poupança de sementes (gravados no plantio) e preço de venda e taxa (no mercado).
+- `GET /market/offers` traz `sell_bonus_bp` e a taxa efetiva; o modal do mercado mostra o bônus.
+- Simulador de paridade entre builds e 32 testes novos.
+
 ## [0.4.0] — 2026-11-23
 
 ### Adicionado

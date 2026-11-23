@@ -300,6 +300,51 @@ O nível máximo é 50 e o XP não passa disso. O XP vem de:
 As respostas de colheita (`/plantings/{id}/harvest` e `/properties/{id}/harvest`)
 incluem `xp_gained`. O catálogo de culturas inclui `harvest_xp`.
 
+### Talentos (Fase 4.5)
+
+Pontos: 1 por nível a partir do nível 2 (49 no nível 50). Espaços de preset:
+`1 + nível // 10`, no máximo 5. Detalhes de design em [`TALENTS.md`](TALENTS.md).
+
+#### GET `/api/v1/catalog/talents` (público)
+
+Mapa completo: `branches` (com `available`), `nodes` (custo, camada, nível mínimo,
+`requires`, `requires_any`, `branch_points`, `exclusive_group`, `effects` e posição
+`x`/`y`) e o centro do mapa.
+
+#### GET `/api/v1/talents` 🔒
+
+Estado do jogador: `points_total/spent/available`, `presets` (com `node_ids`),
+`active_preset_id`, `switch_available_at`, `reset_cost`, `reset_is_free`,
+`build_locked` e `modifiers` (totais de bônus do preset ativo, em pontos-base).
+Cria o preset "Build 1" no primeiro acesso.
+
+#### POST `/api/v1/talents/allocate` 🔒 · `{ "node_id": "agro_solo_fertil" }`
+
+Adquire um talento no preset ativo. `422` se faltar ponto, nível, pré-requisito ou
+pontos no ramo; `409` se já possuir o talento ou outro mestre do mesmo ramo; `404` se
+não existir. Retorna o estado.
+
+#### POST `/api/v1/talents/reset` 🔒
+
+Redefine o preset ativo. A primeira redefinição é grátis; as seguintes custam
+`nível × 5` AGC (ledger `talent_respec`). Retorna `{ cost, state }`.
+
+#### Presets 🔒
+
+- `POST /talents/presets` `{ "name" }` — cria (exige espaço livre).
+- `PATCH /talents/presets/{id}` `{ "name" }` — renomeia.
+- `DELETE /talents/presets/{id}` — exclui (não o ativo).
+- `POST /talents/presets/{id}/activate` — troca de build; a primeira troca é livre e
+  as seguintes têm recarga de 1 hora (`talent_switch_cooldown_seconds`).
+
+Efeitos no jogo:
+
+- **Plantio:** tempo de crescimento, produção, colheita extra, XP e chance de poupar a
+  semente ficam gravados no plantio (`plantings.grow_seconds` e `plantings.modifiers`).
+  Trocar de preset não altera plantações em andamento. Sorteios são determinísticos.
+- **Mercado:** `sell_price` e `market_fee` valem na hora da venda. `GET /market/offers`
+  passa a trazer `sell_bonus_bp` por item e a `fee_basis_points` efetiva.
+
 ## 7. Infra
 
 | Método | Rota | Descrição |

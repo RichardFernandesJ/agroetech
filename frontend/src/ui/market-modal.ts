@@ -22,6 +22,7 @@ const KIND_LABELS: Record<string, string> = {
   initial_grant: "Crédito inicial",
   seed_purchase: "Compra de sementes",
   crop_sale: "Venda de safra",
+  talent_respec: "Redefinição de talentos",
 };
 
 function escapeHtml(value: string): string {
@@ -175,7 +176,7 @@ export class MarketModal {
       return `<p class="empty-list">Nenhuma safra para vender. Colha seus talhões primeiro!</p>`;
     }
     return `
-      <p class="trade-note">Taxa do entreposto: ${fee}% sobre cada venda.</p>
+      <p class="trade-note">Taxa do entreposto: ${fee}% sobre cada venda (talentos podem reduzi-la).</p>
       <div class="trade-list">${rows
         .map((offer) => {
           const owned = this.quantityOf(offer.item_id);
@@ -189,11 +190,20 @@ export class MarketModal {
                 <span class="inventory-icon">🌾</span>
                 <div><strong>${escapeHtml(offer.name)}</strong><small>Você tem: ${owned}</small></div>
               </div>
-              <span class="trade-price">${offer.sell_price} AGC</span>
+              <span class="trade-price">${this.sellPriceLabel(offer)}</span>
               <div class="trade-actions">${btn(1, "×1")}${btn(5, "×5")}${btn(owned, `Tudo (${owned})`)}</div>
             </div>`;
         })
         .join("")}</div>`;
+  }
+
+  private sellPriceLabel(offer: MarketOffer): string {
+    const base = offer.sell_price ?? 0;
+    if (!offer.sell_bonus_bp) {
+      return `${base} AGC`;
+    }
+    const effective = (base * (10_000 + offer.sell_bonus_bp)) / 10_000;
+    return `${effective.toFixed(2)} AGC <small>(+${offer.sell_bonus_bp / 100}%)</small>`;
   }
 
   private renderLedger(): string {
