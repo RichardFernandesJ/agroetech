@@ -1,9 +1,9 @@
 # GDD — Agro & Tech
 
 **Slogan:** Cultive sua história. Construa seu legado.
-**Gênero:** RPG rural / farming simulator / idle game com economia multiplayer.
+**Gênero:** Simulação de Fazenda na Ilha / Farming Tycoon / Idle Game com economia multiplayer.
 **Plataforma:** navegador (desktop e mobile), Phaser 3 + TypeScript.
-**Câmera:** top-down, pixel art.
+**Câmera:** visão aérea (God-view), pixel art, controle livre com mouse/toque (Pan & Zoom dinâmico).
 
 Este documento registra as regras de jogo. Ele descreve o alvo de design e
 marca claramente o que já existe no código. Implementação técnica fica em
@@ -17,33 +17,39 @@ marca claramente o que já existe no código. Implementação técnica fica em
    remendo; voltar depois de horas precisa render algo útil e previsível.
 3. **Servidor é a verdade.** Tempo, inventário, saldo e recompensas são
    calculados no backend. O cliente envia intenções, nunca resultados.
-4. **Economia sustentável.** Nenhum mecanismo pode emitir moeda ou item sem
+4. **Visão panorâmica e jogabilidade relaxante.** O jogador contempla sua fazenda
+   em uma ilha paradisíaca a partir de cima, sem atrito de movimentação física de
+   um avatar para trabalhar. Toda ação acontece na ponta do mouse com fluidez.
+5. **Economia sustentável.** Nenhum mecanismo pode emitir moeda ou item sem
    contrapartida; transações precisam ser atômicas e auditáveis.
-5. **Mundo com identidade própria.** Pixel art rural original, sem copiar
+6. **Mundo com identidade própria.** Pixel art rural e costeiro original, sem copiar
    sprites, mapas ou nomes de outros jogos.
 
 ## 2. Loop principal
 
 ```
-plantar → crescer (online/offline) → colher → vender → comprar sementes
-   ↑                                                    │
-   └──────────── expandir fazenda / melhorar ←──────────┘
+plantar (clique no talhão) → crescer (online/offline) → colher (1 clique) → estocar/vender
+   ↑                                                                               │
+   └──────────────────────── expandir fazenda / melhorar ←────────────────────────┘
 ```
 
-No MVP, o jogador deve conseguir entrar, criar o personagem, andar pela
-fazenda, plantar, sair, voltar, colher, vender e fazer uma melhoria.
+No MVP, o jogador entra, contempla sua ilha de cima, aproxima e afasta o zoom,
+clica no talhão vazio para escolher e plantar uma semente do inventário, acompanha
+o crescimento, colhe com 1 clique (ou colheita geral), consulta o armazém no
+mercado e a sede da fazenda na casa.
 
 ## 3. Estado atual do design
 
 | Sistema | Estado |
 |---|---|
 | Conta e login | Implementado |
-| Propriedade e talhões | Implementado (criação via API) |
-| Inventário | Implementado |
-| Plantio, crescimento e colheita | Implementado no backend |
-| Produção offline | Implementado no backend |
+| Propriedade e talhões | Implementado |
+| Inventário e Armazém | Implementado (backend + modal frontend) |
+| Plantio, crescimento e colheita | Implementado (backend + interação por clique no frontend) |
+| Produção offline | Implementado no backend (simulação determinística) |
 | Catálogo de culturas | Implementado (5 culturas) |
-| Personagem e mapa | Planejado — Fase 2 |
+| Cenário em Ilha e Câmera Pan/Zoom | Implementado (God-view, sem avatar físico) |
+| Feedback visual de lavouras e colheita | Implementado (brotos, plantas maduras, badge pulsante e recompensas flutuantes) |
 | Economia (AGC) | Planejado — Fase 4 |
 | Animais, construções, fabricação | Planejado — Fase 5 |
 | Mercado entre jogadores | Planejado — Fase 6 |
@@ -72,19 +78,18 @@ fazenda, plantar, sair, voltar, colher, vender e fazer uma melhoria.
 
 1. O talhão precisa existir (`0 <= plot_index < plot_count`).
 2. O talhão não pode ter outro plantio ativo.
-3. O jogador precisa ter a semente correspondente.
-4. A semente é consumida no plantio.
-5. O tempo de crescimento é calculado pelo servidor e gravado em
-   `next_ready_at`.
+3. O jogador precisa ter a semente correspondente no inventário.
+4. Ao clicar no talhão vazio, o modal exibe as sementes disponíveis com tempo e rendimento.
+5. A semente é consumida no plantio no backend.
+6. O tempo de crescimento é calculado pelo servidor e gravado em `next_ready_at`.
 
 ### 4.3 Colheita
 
-- A colheita é **manual**. Produção offline apenas deixa ciclos prontos
-  armazenados no plantio.
-- Cada ciclo colhido entrega `yield_quantity` do produto e `seed_yield` da
-  semente.
-- Colheita individual (`POST /plantings/{id}/harvest`) ou em lote
-  (`POST /properties/{id}/harvest`).
+- A colheita é acionada por **clique direto**:
+  - Clicar em um talhão maduro (indicado por um distintivo dourado pulsante) colhe a safra imediatamente.
+  - Botão no HUD `🌾 Colher Tudo (X)` permite colher todos os talhões prontos em um único clique.
+- Cada ciclo colhido entrega `yield_quantity` do produto e `seed_yield` da semente.
+- Feedback visual com recompensas flutuantes animadas subindo do talhão (`+3 Milho`, `+1 Semente`).
 
 ### 4.4 Produção offline
 
@@ -102,19 +107,30 @@ Regras atuais:
 Exemplo: café (1 ciclo/hora, 6 safras), 30 horas offline, janela de 12 horas →
 até 6 ciclos ficam prontos; ao colher, rendem 48 cafés e 6 sementes.
 
-## 5. Personagem e mundo (Fase 2)
+## 5. Mundo em Ilha e Navegação Point & Click
 
-Planejado:
+### 5.1 Sem Avatar Físico (God-View)
+O jogo abandona a mecânica de controlar um boneco andando pelo mapa. O jogador atua
+como o gestor supremo da fazenda:
+- Não há colisão com obstáculos ou tempo perdido andando de um lado para o outro.
+- A atenção do jogador é 100% voltada para as tomadas de decisão, planejamento da ilha e cultivo.
 
-- Personagem 32×32 com animação de caminhada em quatro direções.
-- Mapa inicial da fazenda com tiles de 16×16 ou 32×32.
-- Colisão com cercas, construções, água e limites do mapa.
-- Interação por proximidade: talhão, casa, placa, NPC.
-- Câmera seguindo o personagem; HUD em DOM para inventário e ações.
-- Persistência de posição e aparência no servidor.
+### 5.2 Câmera Pan & Zoom Livre
+- **Pan (Arrasto):** Clicar e arrastar com o mouse (ou toque) move a visão livremente sobre a ilha.
+- **Zoom Dinâmico:** A roda do mouse (scroll wheel) aproxima e afasta a visão (de 0.45x a 2.2x)
+  com ponto focal inteligente sob o cursor do mouse.
+- **Controles no HUD:** Botões dedicados `[+]`, `[-]` e `[⌂ Centralizar na Ilha]` facilitam
+  o enquadramento em qualquer dispositivo.
 
-Decisão de design: o personagem **não** calcula crescimento nem recompensa. A
-cena apenas apresenta o estado retornado pela API.
+### 5.3 O Cenário da Ilha
+- A fazenda é cercada por oceano profundo com ondulações em pixel art.
+- Orla da ilha com águas rasas turquesa, espumas de praia e areia dourada com conchas e estrelas-do-mar.
+- Palmeiras tropicais ao longo da praia e árvores rurais no platô central fértil.
+- Estruturas com interação no clique:
+  - **Casa da Fazenda:** Painel com métricas da ilha, área, talhões e controle de conta.
+  - **Mercado e Píer Portuário:** Armazém geral de sementes e produtos com ancoradouro de barco.
+  - **Poço Artesiano:** Ponto de irrigação de água doce.
+  - **Lagoa Interna:** Enseada de água doce no quadrante sudoeste.
 
 ## 6. Economia (Fase 4)
 

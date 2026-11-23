@@ -5,16 +5,16 @@ avança quando a anterior está executável e testada. “Concluído” signific
 implementado **e** verificado; “parcial” significa que existe base funcional,
 mas falta escopo da fase.
 
-Última atualização: 2026-11-22.
+Última atualização: 2026-11-23.
 
 ## Visão geral
 
 | Fase | Tema | Status |
 |---|---|---|
 | 1 | Fundação | ✅ Concluída |
-| 2 | Mundo (personagem, mapa, movimento) | ⏭️ Próxima |
-| 3 | Agricultura | 🟡 Backend concluído; integração visual pendente |
-| 4 | Economia básica | ⬜ Não iniciada |
+| 2 | Ilha e Câmera Livre (God-View) | ✅ Concluída |
+| 3 | Agricultura Point & Click | ✅ Concluída |
+| 4 | Economia básica (AgroCoin & Mercado) | ⏭️ Próxima |
 | 5 | Produção (animais, construções, fabricação) | ⬜ Não iniciada |
 | 6 | Multiplayer econômico | ⬜ Não iniciada |
 | 7 | Expansão (cidades, regiões, profissões) | ⬜ Não iniciada |
@@ -28,61 +28,44 @@ mas falta escopo da fase.
 | Docker | `docker-compose.yml` com `db`, `api`, `web` e profile `test`; Dockerfiles separados. |
 | FastAPI | `backend/app/main.py`, rotas versionadas em `/api/v1`, OpenAPI em `/docs`. |
 | PostgreSQL | SQLAlchemy 2 async + `asyncpg`; Compose com `postgres:16-alpine` e healthcheck. |
-| Phaser | Phaser 3.90 + TypeScript + Vite; boot, health check e cena placeholder responsiva. |
+| Phaser | Phaser 3.90 + TypeScript + Vite; boot, health check e cena responsiva. |
 | Autenticação | Cadastro, login por e-mail/username, JWT HS256 e `/auth/me`. |
 | Documentação | `README.md`, `docs/architecture.md`, `docs/decisions.md`, `docs/GDD.md`, `docs/API.md`, `docs/DATABASE.md`, `docs/ROADMAP.md`, `docs/CHANGELOG.md`. |
 | Migrações | Alembic configurado, revisão `0001_foundation` e teste de paridade schema/models. |
 
-**Pendência de validação:** o Docker não está instalado no ambiente de
-desenvolvimento usado até aqui. O Compose foi validado como YAML e o runtime foi
-testado com Uvicorn + SQLite; falta executar `docker compose up --build` em uma
-máquina com Docker.
+## Fase 2 — Ilha e Câmera Livre (God-View) ✅
 
-## Fase 2 — Mundo ⏭️
+Objetivo: transformar o jogo em simulação panorâmica em uma ilha jogada pelo mouse,
+eliminando a necessidade de controlar um avatar físico para fazer as tarefas.
 
-Objetivo: dar corpo jogável ao MVP no cliente, mantendo o servidor como fonte
-da verdade.
+- [x] Mapa da Ilha em pixel art cercado por oceano profundo, águas rasas, praias de areia dourada e platô fértil.
+- [x] Remoção do avatar/personagem físico e de suas restrições de colisão para trabalhar.
+- [x] Câmera livre com Pan (arrastar com mouse/toque) com limites da ilha.
+- [x] Zoom dinâmico suave pela roda do mouse (scroll wheel de 0.45x a 2.2x) com foco sob o cursor.
+- [x] Controles de zoom acessíveis no HUD (`[+]`, `[-]` e `[⌂ Centralizar]`).
+- [x] Estruturas interativas com detecção de hover e clique (Casa, Mercado, Poço, Barco, Talhões).
 
-- [ ] Modelo `Character` (nome, aparência, posição, fazenda atual).
-- [ ] Criação de personagem no cadastro ou no primeiro acesso.
-- [ ] Mapa inicial em pixel art (tiles 16×16 ou 32×32, top-down).
-- [ ] Movimentação com teclado e toque, animação de caminhada.
-- [ ] Colisões com cenário e limites do mapa.
-- [ ] Interações por proximidade (talhão, construção, NPC).
-- [ ] Câmera seguindo o personagem e HUD mínimo.
-- [ ] Endpoint para persistir posição/aparência e testes de autorização.
+## Fase 3 — Agricultura Point & Click ✅
 
-Critérios de saída: o jogador entra, cria/escolhe personagem, anda pelo mapa,
-colide corretamente e interage com pelo menos um objeto.
+Objetivo: permitir que todas as etapas agrícolas sejam realizadas diretamente
+com o mouse com resposta visual imediata.
 
-## Fase 3 — Agricultura 🟡
+- [x] Catálogo de culturas integrado ao frontend (Milho, Cenoura, Tomate, Morango, Café).
+- [x] Plantio direto por clique: clicar em talhão vazio abre seletor com sementes disponíveis do inventário.
+- [x] Visual dos talhões em tempo real: brotos verdejantes e plantas maduras coloridas.
+- [x] Indicador flutuante pulsante de colheita pronta.
+- [x] Colheita com 1 clique no talhão com animação de recompensa flutuante (`+3 Milho`, `+1 Semente`).
+- [x] Botão de colheita geral no HUD (`🌾 Colher Tudo (X)`).
+- [x] Modais DOM integrados para a Casa da Fazenda e o Armazém do Mercado.
+- [x] Sincronização periódica da produção em background com o servidor.
 
-Backend já entrega o ciclo principal. O que falta é a camada visual e escopo
-opcional da seção 6 do `AGENTS.md`.
-
-Concluído:
-
-- [x] Catálogo de sementes e produtos.
-- [x] Plantio por talhão com consumo de sementes.
-- [x] Crescimento por timestamp e colheita manual.
-- [x] Produção offline com janela e teto de ciclos.
-- [x] Inventário por propriedade.
-- [x] Culturas de ciclo único e recorrentes.
-
-Pendente:
-
-- [ ] Integração da fazenda Phaser com inventário/plantio/colheita.
-- [ ] Preparação do terreno, irrigação e fertilizantes.
-- [ ] Culturas especiais e desbloqueios por nível.
-- [ ] Ferramentas/equipamentos de trabalho.
-
-## Fase 4 — Economia básica ⬜
+## Fase 4 — Economia básica ⏭️
 
 - [ ] Carteira com AgroCoin (AGC) e `WalletLedger`.
-- [ ] Venda de produtos para NPCs.
-- [ ] Loja de sementes.
+- [ ] Venda de produtos colhidos no mercado.
+- [ ] Compra de novas sementes no mercado.
 - [ ] Histórico financeiro e auditoria.
-- [ ] Idempotência em operações sensíveis.
+- [ ] Idempotência em operações financeiras sensíveis.
 - [ ] Testes de saldo, taxas e prevenção de duplicação.
 
 ## Fase 5 — Produção ⬜
@@ -120,22 +103,25 @@ Pendente:
 | Requisito | Status |
 |---|---|
 | Cadastro e login | ✅ |
-| Criação de personagem | ⬜ |
-| Fazenda inicial | ✅ (criação via API; automática no primeiro acesso pendente) |
-| Movimentação | ⬜ |
-| Mapa em pixel art | ⬜ |
-| Plantio | ✅ backend |
-| Colheita | ✅ backend |
-| Produção offline | ✅ backend |
-| Inventário | ✅ backend |
-| Venda para NPCs | ⬜ |
-| Compra de sementes | ⬜ |
+| Perfil do jogador (`Character`) | ✅ |
+| Fazenda inicial | ✅ |
+| Câmera livre (pan/zoom) | ✅ |
+| Mapa da ilha em pixel art | ✅ |
+| Plantio | ✅ |
+| Colheita | ✅ |
+| Produção offline | ✅ |
+| Inventário | ✅ |
+| Venda para NPCs | ⬜ (Fase 4) |
+| Compra de sementes | ⬜ (Fase 4) |
 | Experiência e níveis | ⬜ |
-| Construção melhorável | ⬜ |
+| Construção melhorável | ⬜ (Fase 5) |
+
+## Pendências técnicas
+
+- Ampliar E2E Playwright: plantio e colheita pela UI (hoje cobre cadastro, perfil, HUD e sessão).
+- Pasta `workers/` do backend (necessária a partir da Fase 5).
 
 ## Próxima entrega recomendada
 
-**Fase 2, incremento 1:** modelo `Character` + endpoint de criação/consulta +
-cena de criação de personagem. Em seguida, mapa e movimentação. A criação de
-personagem vem antes do mapa porque define o dado que a cena de mundo precisa
-carregar.
+**Fase 4:** carteira AgroCoin, `WalletLedger`, venda de colheitas e compra de
+sementes, com idempotência e testes de saldo.

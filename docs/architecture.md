@@ -79,25 +79,35 @@ agroetech/
 | Pasta | Responsabilidade |
 |---|---|
 | `src/config` | Variáveis de ambiente tipadas e configuração do `Phaser.Game`. |
-| `src/game/scenes` | Cenas: renderização, input e transições. Não fazem `fetch` diretamente. |
-| `src/services` | Comunicação HTTP com a API e tratamento padronizado de erros. |
-| `src/styles` | Reset e layout do container do canvas. |
+| `src/game/scenes` | `BootScene` (autenticação/carregamento) e `FarmScene` (visão aérea da ilha, câmera livre pan/zoom, ciclo de cliques). |
+| `src/game/world` | Geração orgânica do mapa da ilha (`map.ts`), posicionamento de estruturas (`build-world.ts`) e texturas procedurais pixel art (`textures.ts`). |
+| `src/services` | Comunicação HTTP com a API (`propertyService`, `characterService`, etc.) e tratamento padronizado de erros. |
+| `src/state` | Gerenciamento de sessão JWT (`session.ts`) e estado local do jogador. |
+| `src/ui` | HUD moderno e modais DOM sobrepostos (`PlantingModal`, `HouseModal`, `MarketModal`, `AuthPanel`, `CharacterPanel`). |
+| `src/styles` | Reset, layout, HUD e design dos modais. |
 
-### Fluxo de boot
+### Fluxo de jogo e interação
 
 1. `main.ts` cria o `Phaser.Game` com `GAME_CONFIG`.
-2. `BootScene` exibe a marca e consulta `GET /health` via `systemService`.
-3. Após o boot, `FarmScene` desenha a grade placeholder de talhões.
-4. O redimensionamento é tratado por `Scale.RESIZE`; a cena é redesenhada.
-
-As telas de login, seleção de fazenda, inventário e plantio entram como novas
-cenas e serviços. A regra é: **cena não chama `fetch`**; ela chama um serviço.
+2. `BootScene` valida a conexão com a API, restaura sessão ou apresenta o login/cadastro.
+3. `FarmScene` desenha a **Ilha** em pixel art cercada por oceano e centraliza a visão aérea ("God-view").
+4. **Navegação Livre:** O jogador usa o mouse para arrastar a tela (pan) e a roda do mouse para zoom in e out com foco inteligente sob o ponteiro (0.45x a 2.2x), ou botões no HUD.
+5. **Cultivo Direto por Clique:**
+   - Clicar em um talhão vazio abre o `PlantingModal` com as sementes do inventário para plantio imediato.
+   - Os talhões refletem os estágios em tempo real: brotos verdejantes e plantas maduras com distintivo dourado pulsante.
+   - Clicar no talhão maduro realiza a colheita instantânea com animação flutuante de recompensas.
+   - Botão no HUD permite colher todos os talhões prontos em um só clique.
+6. **Estruturas:** Clicar na Casa abre métricas e logout; clicar no Mercado abre o inventário/armazém.
+7. A sincronização periódica de plantios roda a cada 4 segundos, mantendo a tela atualizada com o servidor.
 
 ### Decisões de frontend
 
 - **Vite**: dev server rápido, proxy nativo e build estático simples.
 - **TypeScript estrito**: `strict`, `noUnusedLocals`, `noUnusedParameters`,
   `noUncheckedIndexedAccess`.
+- **God-View sem avatar físico:** Elimina atrito de locomoção e foca 100% na gestão da fazenda.
+- **Interface Híbrida (Canvas + DOM):** O mundo da ilha roda em Canvas de alta performance no Phaser; formulários, HUD e modais usam DOM nítido e acessível sobreposto.
+- **Pixel Art Nítido:** Configurações `pixelArt: true` e `roundPixels: true` garantem que os tiles não sofram borramento durante o zoom.
 - **Alias `@/`**: evita caminhos relativos profundos.
 - **Sem framework de UI**: o jogo é o canvas; HUDs complexos podem usar
   HTML/DOM sobreposto no futuro.

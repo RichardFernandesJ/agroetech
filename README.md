@@ -1,13 +1,8 @@
 # Agro & Tech
 
-RPG de fazenda para navegador. Monorepo com **API FastAPI/PostgreSQL** e
-**cliente Phaser 3/TypeScript**.
+Simulador de fazenda na ilha para navegador em pixel art ("God-view"). Monorepo com **API FastAPI/PostgreSQL** e **cliente Phaser 3/TypeScript**.
 
-> **Status:** Fase 1 (Fundação) concluída. O backend cobre contas, fazendas,
-> inventário, plantio, colheita e produção offline, com migrações Alembic. O
-> frontend entrega o boot do Phaser, uma cena placeholder responsiva e o health
-> check da API. A próxima fase é o mundo jogável (personagem, mapa e
-> movimentação).
+> **Status:** Fases 1 (Fundação), 2 (Ilha & Câmera Livre) e 3 (Agricultura Point & Click) concluídas. O jogador gerencia sua ilha de cima sem controlar um avatar para trabalhar: navega livremente com o mouse (pan e zoom dinâmico), planta sementes clicando nos talhões, acompanha o crescimento em tempo real e colhe safras manualmente ou em lote, com produção offline persistida no backend. A próxima fase é a Economia básica (AgroCoin) e comércio de safras.
 
 ## Stack
 
@@ -41,9 +36,12 @@ agroetech/
 ├── frontend/
 │   ├── src/
 │   │   ├── config/         # env tipado + configuração do Phaser
-│   │   ├── game/scenes/    # BootScene, FarmScene (placeholder)
-│   │   ├── services/       # ApiClient, systemService
+│   │   ├── game/scenes/    # BootScene e FarmScene
+│   │   ├── game/world/     # mapa, texturas procedurais e construção do mundo
+│   │   ├── services/       # ApiClient e serviços de API
+│   │   ├── state/          # sessão (JWT) e estado do jogo
 │   │   ├── styles/
+│   │   ├── ui/             # painéis DOM (login, personagem), HUD e toque
 │   │   └── main.ts
 │   ├── Dockerfile          # alvos dev, build e prod
 │   ├── nginx.conf
@@ -195,7 +193,7 @@ As variáveis `VITE_*` estão documentadas em `frontend/.env.example`.
 ## Testes e qualidade
 
 ```bash
-# Backend: 34 testes (API, regras puras e migrações)
+# Backend: 43 testes (API, regras puras e migrações)
 cd backend
 pytest
 ruff check .
@@ -221,6 +219,9 @@ Base: `/api/v1`. Rotas com 🔒 exigem `Authorization: Bearer <token>`.
 | POST | `/auth/register` | Cria conta (e-mail, username, senha). |
 | POST | `/auth/login` | Login por e-mail ou username; devolve JWT. |
 | GET | `/auth/me` 🔒 | Jogador autenticado. |
+| POST | `/characters` 🔒 | Cria o personagem e, se preciso, a fazenda inicial. |
+| GET | `/characters/me` 🔒 | Personagem do jogador autenticado. |
+| PATCH | `/characters/me/position` 🔒 | Persiste posição e direção no mapa. |
 | POST | `/properties` 🔒 | Cria fazenda + kit inicial de sementes. |
 | GET | `/properties` 🔒 | Lista fazendas do jogador. |
 | GET | `/properties/{id}` 🔒 | Detalha uma fazenda. |
@@ -247,22 +248,34 @@ TOKEN=$(curl -s -X POST http://localhost:8000/api/v1/auth/login \
 
 ## Escopo desta etapa
 
-**Fase 1 — concluída**
+**Fase 1 — Fundação (Concluída)**
 
 - Monorepo com backend e frontend independentes e repositório Git.
 - API em camadas, autenticação JWT, fazendas, inventário, plantio, colheita.
 - Produção offline com janela de 12h e teto de 8 ciclos por plantio.
 - Migrações Alembic com revisão inicial e teste de paridade com os models.
 - Docker Compose com PostgreSQL, API, Vite e profile de testes.
-- Phaser 3 inicializado, cena placeholder responsiva e health check da API.
-- README, arquitetura, ADRs, GDD, API, banco, roadmap e changelog.
 
-**Próxima fase — Mundo**
+**Fase 2 — Ilha & Câmera Livre (Concluída)**
 
-- Modelo `Character` e criação de personagem.
-- Mapa inicial em pixel art, movimentação, colisões e interações.
-- Telas de login/cadastro e armazenamento de sessão no cliente.
-- Integração da fazenda com a API (inventário, plantio, colheita).
+- Cenário em Ilha cercada por mar profundo, águas rasas, praias e interior fértil.
+- Remoção do avatar físico controlável (jogabilidade panorâmica "God-view").
+- Câmera livre com Pan (arraste do mouse/toque) e Zoom in/out dinâmico pela roda do mouse (0.45x a 2.2x).
+- Botões de zoom e recentralização no HUD para acessibilidade desktop e mobile.
+
+**Fase 3 — Agricultura Point & Click (Concluída)**
+
+- Ciclo completo de cultivo com o mouse: clique no talhão vazio para abrir o modal de sementes e plantar.
+- Feedback visual em tempo real: brotos verdejantes e plantas maduras coloridas.
+- Indicador pulsante de colheita pronta nos talhões maduros.
+- Colheita individual com 1 clique (com números flutuantes de recompensa) e botão de colheita rápida no HUD.
+- Modais DOM dedicados para a Sede da Fazenda (Casa) e o Armazém do Mercado.
+
+**Próxima fase — Economia básica (Fase 4)**
+
+- Carteira de AgroCoin (AGC) e livro-razão (`WalletLedger`).
+- Venda de safras colhidas e compra de novas sementes no mercado.
+- Melhorias de capacidade de armazenamento e expansão da ilha.
 
 Depois: economia (AGC), loja, animais, construções, mercado e multiplayer.
 Detalhes em [`docs/ROADMAP.md`](docs/ROADMAP.md).

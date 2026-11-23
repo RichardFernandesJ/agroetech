@@ -7,9 +7,43 @@ Versionamento semântico para a API e o cliente.
 
 ### Próximo
 
-- Fase 2: modelo `Character`, criação de personagem, mapa e movimentação.
-- Integração do Phaser com inventário, plantio e colheita.
-- Testes E2E com Playwright.
+- Fase 4: Economia básica, carteira de AgroCoin (AGC), compra de sementes e venda de colheitas no mercado.
+- Expansão de talhões e novas construções.
+- Ampliar E2E Playwright (plantio e colheita).
+
+## [0.2.1] — 2026-11-23
+
+### Alterado
+
+- `AGENTS.md`: Fase 2 e MVP alinhados ao modelo God-view sem avatar; `Characters` definido como perfil do jogador; adicionada seção de convenções operacionais.
+- Playwright adicionado (`frontend/e2e`, `npm run test:e2e`): fluxo cadastro → perfil → HUD → sessão persistente, com API em SQLite e Vite, sem Docker.
+- `AGENTS.md.txt` removido (duplicado de `AGENTS.md`).
+- `docs/ROADMAP.md`: removida duplicação da Fase 4, MVP e próxima entrega atualizados.
+
+## [0.2.0] — 2026-11-23
+
+### Adicionado
+
+- **Cenário em Ilha:** Mundo redesenhado como uma ilha cercada por mar profundo (`tile-ocean`), águas rasas turquesa (`tile-shallow-water`), praias de areia dourada com conchas (`tile-sand`, `tile-sand-decor`), píer de madeira e barco de pesca.
+- **Câmera Pan & Zoom no Mouse:** Navegação com arrasto de tela (pan) e zoom in/out suave pela roda do mouse (0.45x a 2.2x) com ponto focal inteligente sob o cursor do mouse.
+- **Controles no HUD:** Botões dedicados `[+]`, `[-]` e `[⌂ Centralizar na Ilha]` para desktop e dispositivos móveis.
+- **Agricultura Point & Click:**
+  - `PlantingModal`: Seletor de sementes disponíveis no inventário ao clicar em talhões vazios para plantio com 1 clique.
+  - Renderização dos estágios das plantas nos talhões: brotos viçosos e plantas maduras coloridas para cada cultura do catálogo.
+  - Distintivo pulsante de colheita pronta flutuando sobre talhões maduros.
+  - Colheita por clique direto com animação de recompensa flutuante (`+X safra`).
+  - Botão de colheita rápida no HUD (`🌾 Colher Tudo (X)`).
+- **Modais de Estruturas:**
+  - `HouseModal`: Painel de métricas da ilha, talhões, área e logout.
+  - `MarketModal`: Painel de armazém com visualização completa de sementes e safras.
+- Sincronização periódica em background a cada 4 segundos com a API.
+- Documento `AGENTS.md` e ADR-014 documentando a transição de design para o modelo God-view de ilha.
+
+### Alterado
+
+- Removido avatar físico controlável, controles WASD de caminhada e física de colisão de corpo rígido.
+- `propertyService` expandido com chamadas para `getPlantings`, `plant`, `harvest`, `harvestAll` e `getInventory`.
+- `README.md`, `docs/GDD.md`, `docs/architecture.md`, `docs/ROADMAP.md` e `AGENTS.md` atualizados com o novo formato.
 
 ## [0.1.1] — 2026-11-22
 

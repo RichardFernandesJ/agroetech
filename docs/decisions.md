@@ -178,3 +178,31 @@ intenções.
 
 **Consequências:** reduz cheating e mantém consistência entre dispositivos.
 O cliente pode prever animações, mas nunca decide o resultado.
+
+---
+
+## ADR-014 — Jogabilidade God-View em Ilha e Interação Point & Click sem Avatar Físico
+
+**Contexto:** O modelo inicial previa um RPG top-down tradicional onde o jogador
+controlava um boneco andando pelo mapa com teclado (WASD) e colisões físicas,
+tendo que caminhar até cada talhão para interagir por proximidade. Esse modelo gerava
+atrito para um jogo de gestão rural / farming simulator de navegador, tornando tarefas
+repetitivas lentas e cansativas.
+
+**Decisão:** Eliminar o personagem controlável físico do mapa e migrar para uma
+experiência de simulação panorâmica ("God-view") em uma ilha cercada de água:
+1. **Câmera Pan & Zoom no Mouse:** O jogador navega arrastando a tela livremente (pan)
+   e aplicando zoom dinâmico na roda do mouse (scroll wheel de 0.45x a 2.2x com ponto
+   focal no cursor), além de controles acessíveis no HUD.
+2. **Cenário em Ilha:** O mapa foi reestruturado para ser uma ilha orgânica com mar
+   profundo, praias com conchas, caminhos de terra batida e platô fértil no centro.
+3. **Agricultura 100% no Clique:** Clicar em talhões vazios abre seletor com as
+   sementes do inventário para plantio imediato com 1 clique; talhões maduros exibem
+   distintivo dourado pulsante e são colhidos com um único clique (com recompensas
+   flutuantes) ou pelo botão "Colher Tudo" no HUD.
+4. **Desacoplamento do Backend:** As rotas do backend já operavam baseadas em
+   `property_id` e `plot_index`, dispensando alterações de regras de negócio.
+
+**Consequências:** Jogabilidade muito mais fluida, relaxante e ágil, perfeitamente
+alinhada a clássicos de gerenciamento como *Islanders*, *Hay Day* e *Rusty's Retirement*.
+Elimina bugs de travamento em colisão física de avatar e simplifica a renderização.
