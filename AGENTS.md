@@ -110,7 +110,9 @@ Diretrizes:
   - Broto: Pequenos brotos verdes viçosos.
   - Crescendo: Folhagem densa correspondente à cultura.
   - Pronto para Colheita: Produto maduro colorido e distintivo flutuante dourado pulsando sobre o talhão.
+- Estilo visual: pixel art moderno (pixels nítidos, paleta limpa, sombras suaves), sem aspecto retrô pesado.
 - Interface moderna, nítida e responsiva em DOM sobreposto.
+- Toda interação deve ser possível apenas com mouse/toque (botões ×1, ×5 e Máx em vez de digitar quantidades).
 
 ## 6. MECÂNICAS PRINCIPAIS
 

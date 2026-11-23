@@ -14,7 +14,7 @@ mas falta escopo da fase.
 | 1 | Fundação | ✅ Concluída |
 | 2 | Ilha e Câmera Livre (God-View) | ✅ Concluída |
 | 3 | Agricultura Point & Click | ✅ Concluída |
-| 4 | Economia básica (AgroCoin & Mercado) | ⏭️ Próxima |
+| 4 | Economia básica (AgroCoin & Mercado) | 🟡 Em andamento (núcleo pronto) |
 | 5 | Produção (animais, construções, fabricação) | ⬜ Não iniciada |
 | 6 | Multiplayer econômico | ⬜ Não iniciada |
 | 7 | Expansão (cidades, regiões, profissões) | ⬜ Não iniciada |
@@ -59,14 +59,17 @@ com o mouse com resposta visual imediata.
 - [x] Modais DOM integrados para a Casa da Fazenda e o Armazém do Mercado.
 - [x] Sincronização periódica da produção em background com o servidor.
 
-## Fase 4 — Economia básica ⏭️
+## Fase 4 — Economia básica 🟡
 
-- [ ] Carteira com AgroCoin (AGC) e `WalletLedger`.
-- [ ] Venda de produtos colhidos no mercado.
-- [ ] Compra de novas sementes no mercado.
-- [ ] Histórico financeiro e auditoria.
-- [ ] Idempotência em operações financeiras sensíveis.
-- [ ] Testes de saldo, taxas e prevenção de duplicação.
+- [x] Carteira com AgroCoin (AGC) e `WalletLedger` (migração `0003_wallet`).
+- [x] Venda de safras ao entreposto, com taxa de 5%.
+- [x] Compra de sementes no entreposto.
+- [x] Histórico financeiro (extrato) por API e na interface.
+- [x] Idempotência (`Idempotency-Key`) e transações atômicas.
+- [x] Testes de saldo, taxas, idempotência, autorização e conciliação do ledger.
+- [x] Interface do mercado 100% por mouse e saldo no HUD.
+- [ ] Balanceamento fino de preços com dados de jogo reais.
+- [ ] Rate limiting nas rotas de mercado (Fase 8).
 
 ## Fase 5 — Produção ⬜
 
@@ -111,8 +114,8 @@ com o mouse com resposta visual imediata.
 | Colheita | ✅ |
 | Produção offline | ✅ |
 | Inventário | ✅ |
-| Venda para NPCs | ⬜ (Fase 4) |
-| Compra de sementes | ⬜ (Fase 4) |
+| Venda para NPCs | ✅ |
+| Compra de sementes | ✅ |
 | Experiência e níveis | ⬜ |
 | Construção melhorável | ⬜ (Fase 5) |
 
@@ -123,5 +126,5 @@ com o mouse com resposta visual imediata.
 
 ## Próxima entrega recomendada
 
-**Fase 4:** carteira AgroCoin, `WalletLedger`, venda de colheitas e compra de
-sementes, com idempotência e testes de saldo.
+**Experiência e níveis:** XP por plantio e colheita e nível no HUD; depois, a primeira
+construção melhorável (Fase 5), que fecha o MVP.

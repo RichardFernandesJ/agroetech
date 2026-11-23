@@ -135,6 +135,36 @@ Constraints e índices:
 O índice parcial garante **um plantio ativo por talhão** sem impedir o histórico
 de plantios esgotados. Funciona em PostgreSQL e SQLite.
 
+### `wallets`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `user_id` | UUID | FK `users.id`, CASCADE, único |
+| `balance` | BIGINT | NOT NULL, `>= 0` |
+| `created_at` / `updated_at` | TIMESTAMPTZ | NOT NULL |
+
+Constraints: `uq_wallets_user_id`, `ck_wallets_balance_non_negative`.
+
+### `wallet_ledger`
+
+Livro-razão imutável: toda mudança de saldo gera uma linha. A soma de `amount`
+sempre iguala `wallets.balance` (verificado em teste).
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `wallet_id` | UUID | FK `wallets.id`, CASCADE, indexado |
+| `kind` | VARCHAR(30) | `initial_grant`, `seed_purchase`, `crop_sale` |
+| `amount` | BIGINT | com sinal (crédito `+`, débito `-`) |
+| `balance_after` | BIGINT | `>= 0` |
+| `item_id` / `quantity` / `unit_price` | — | nulos no crédito inicial |
+| `fee` | INTEGER | taxa retida em vendas |
+| `idempotency_key` | VARCHAR(64) | nulo ou único por carteira |
+
+Constraints: `uq_wallet_ledger_idempotency (wallet_id, idempotency_key)`,
+`ck_wallet_ledger_balance_non_negative`. Migração: `0003_wallet`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:
@@ -219,7 +249,7 @@ Isso detecta model alterado sem migração correspondente.
 
 Fase 2: `characters` (nome, aparência, posição, fazenda atual).
 
-Fase 4: `wallets`, `wallet_ledger`, `market_listings`, `market_transactions`,
+Fase 4: `wallets` e `wallet_ledger` (feitos); restante: `market_listings`, `market_transactions`,
 `trade_offers`, `trade_items`.
 
 Fase 5: `animals`, `buildings`, `recipes`, `production_jobs`, `skills`,

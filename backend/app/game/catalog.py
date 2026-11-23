@@ -18,6 +18,8 @@ class CropDefinition:
     yield_quantity: int
     seed_yield: int
     max_cycles: int
+    seed_price: int  # AGC cobrados pelo entreposto ao comprar 1 semente
+    sell_price: int  # AGC pagos pelo entreposto por 1 unidade da safra
 
     @property
     def seed_item(self) -> str:
@@ -45,6 +47,8 @@ CROPS: dict[str, CropDefinition] = {
         yield_quantity=3,
         seed_yield=1,
         max_cycles=1,
+        seed_price=8,
+        sell_price=5,
     ),
     "cenoura": CropDefinition(
         id="cenoura",
@@ -54,6 +58,8 @@ CROPS: dict[str, CropDefinition] = {
         yield_quantity=4,
         seed_yield=1,
         max_cycles=1,
+        seed_price=14,
+        sell_price=6,
     ),
     "tomate": CropDefinition(
         id="tomate",
@@ -63,6 +69,8 @@ CROPS: dict[str, CropDefinition] = {
         yield_quantity=3,
         seed_yield=1,
         max_cycles=3,
+        seed_price=22,
+        sell_price=6,
     ),
     "morango": CropDefinition(
         id="morango",
@@ -72,6 +80,8 @@ CROPS: dict[str, CropDefinition] = {
         yield_quantity=5,
         seed_yield=1,
         max_cycles=4,
+        seed_price=30,
+        sell_price=6,
     ),
     "cafe": CropDefinition(
         id="cafe",
@@ -81,6 +91,8 @@ CROPS: dict[str, CropDefinition] = {
         yield_quantity=8,
         seed_yield=1,
         max_cycles=6,
+        seed_price=90,
+        sell_price=9,
     ),
 }
 

@@ -7,9 +7,11 @@ from app.api.v1.routes import (
     catalog,
     characters,
     inventory,
+    market,
     plantings,
     production,
     properties,
+    wallet,
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -20,3 +22,5 @@ api_router.include_router(inventory.router)
 api_router.include_router(plantings.router)
 api_router.include_router(production.router)
 api_router.include_router(catalog.router)
+api_router.include_router(wallet.router)
+api_router.include_router(market.router)

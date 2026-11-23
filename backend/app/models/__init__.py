@@ -6,5 +6,15 @@ from app.models.inventory import InventoryItem
 from app.models.planting import Planting
 from app.models.property import Property
 from app.models.user import User
+from app.models.wallet import Wallet, WalletLedgerEntry
 
-__all__ = ["Base", "Character", "InventoryItem", "Planting", "Property", "User"]
+__all__ = [
+    "Base",
+    "Character",
+    "InventoryItem",
+    "Planting",
+    "Property",
+    "User",
+    "Wallet",
+    "WalletLedgerEntry",
+]

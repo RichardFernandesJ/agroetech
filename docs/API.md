@@ -239,6 +239,49 @@ O resultado não altera o inventário; a colheita continua manual.
 
 Lista sementes e produtos com `id`, `name`, `category` e `description`.
 
+### Carteira e Mercado (Fase 4)
+
+Moeda: **AgroCoin (AGC)**, inteira. Preços são sempre definidos no servidor;
+o cliente envia apenas `item_id` e `quantity` (1 a 999).
+
+#### GET `/api/v1/wallet` 🔒
+
+Cria a carteira no primeiro acesso, com crédito inicial único de 100 AGC.
+
+```json
+{ "id": "…", "balance": 100, "currency": "AGC" }
+```
+
+#### GET `/api/v1/wallet/ledger?limit=20&offset=0` 🔒
+
+Histórico financeiro, mais recente primeiro (`limit` 1–100). Cada linha traz
+`kind` (`initial_grant`, `seed_purchase`, `crop_sale`), `amount` (com sinal),
+`balance_after`, item, quantidade, `unit_price` e `fee`.
+
+#### GET `/api/v1/market/offers` 🔒
+
+Lista `buy_price` (sementes vendidas pelo entreposto) e `sell_price` (safras
+compradas), além de `fee_basis_points` (500 = 5% sobre vendas).
+
+#### POST `/api/v1/properties/{property_id}/market/buy` 🔒
+#### POST `/api/v1/properties/{property_id}/market/sell` 🔒
+
+```json
+{ "item_id": "seed_milho", "quantity": 5 }
+```
+
+Cabeçalho opcional `Idempotency-Key` (8–64 caracteres `[A-Za-z0-9_-]`): reenviar a
+mesma chave com o mesmo corpo devolve o resultado original (`"replayed": true`) sem
+repetir débito/crédito; a mesma chave com corpo diferente retorna `409`.
+
+Resposta: `kind`, `item_id`, `item_name`, `quantity`, `unit_price`, `gross`, `fee`,
+`amount` (variação do saldo), `balance` e `replayed`.
+
+Erros: `422` saldo/estoque insuficiente ou item fora de negociação; `404`
+propriedade de outro jogador; `409` conflito de idempotência.
+
+O catálogo de culturas (`/catalog/crops`) agora inclui `seed_price` e `sell_price`.
+
 ## 7. Infra
 
 | Método | Rota | Descrição |

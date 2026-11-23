@@ -7,9 +7,24 @@ Versionamento semântico para a API e o cliente.
 
 ### Próximo
 
-- Fase 4: Economia básica, carteira de AgroCoin (AGC), compra de sementes e venda de colheitas no mercado.
+- Experiência e níveis; primeira construção melhorável.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
+
+## [0.3.0] — 2026-11-23
+
+### Adicionado
+
+- **Fase 4 — Economia básica:** carteira AgroCoin (`wallets`) e livro-razão (`wallet_ledger`), migração `0003_wallet`.
+- Endpoints `GET /wallet`, `GET /wallet/ledger`, `GET /market/offers`, `POST /properties/{id}/market/buy|sell`.
+- Idempotência via cabeçalho `Idempotency-Key`; taxa de 5% nas vendas; crédito inicial único de 100 AGC.
+- Preços `seed_price` e `sell_price` no catálogo de culturas.
+- Mercado no jogo (Comprar / Vender / Extrato) operado só com cliques e saldo clicável no HUD.
+- 14 testes de economia; o E2E cobre compra e extrato.
+
+### Corrigido
+
+- O armazém do mercado filtrava a categoria `crop`, mas o backend usa `product`; as safras nunca apareciam.
 
 ## [0.2.1] — 2026-11-23
 

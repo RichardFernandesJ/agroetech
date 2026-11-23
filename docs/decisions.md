@@ -206,3 +206,23 @@ experiência de simulação panorâmica ("God-view") em uma ilha cercada de águ
 **Consequências:** Jogabilidade muito mais fluida, relaxante e ágil, perfeitamente
 alinhada a clássicos de gerenciamento como *Islanders*, *Hay Day* e *Rusty's Retirement*.
 Elimina bugs de travamento em colisão física de avatar e simplifica a renderização.
+
+## ADR-015 — Carteira por jogador, ledger imutável e idempotência por cabeçalho
+
+**Contexto:** A Fase 4 introduz o AgroCoin (AGC). O AGENTS.md exige validação no
+servidor, transações atômicas, histórico, taxas e prevenção de duplicação.
+
+**Decisão:**
+1. Uma carteira por **usuário** (não por propriedade), pensando no multiplayer futuro.
+2. Valores inteiros (`BIGINT`); nada de centavos ou ponto flutuante.
+3. Todo movimento gera uma linha imutável em `wallet_ledger` com `balance_after`;
+   o saldo é conciliável com a soma do ledger.
+4. A operação (saldo + inventário + ledger) roda na transação da requisição, com
+   `SELECT ... FOR UPDATE` na carteira, e `CHECK balance >= 0` como rede de segurança.
+5. Idempotência por `Idempotency-Key` com unicidade `(wallet_id, key)`; replays
+   devolvem o resultado original e chaves reutilizadas com outro corpo dão `409`.
+6. Preços vivem no catálogo do servidor; a taxa de 5% é sumidouro de moeda.
+
+**Consequências:** Base pronta para mercado global e trocas. A venda ao entreposto
+NPC ainda emite moeda limitada pela produção das fazendas; o balanceamento deve ser
+revisto com dados reais antes do multiplayer.

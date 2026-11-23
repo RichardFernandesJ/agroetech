@@ -11,6 +11,8 @@ class CropRead(BaseModel):
     yield_quantity: int
     seed_yield: int
     max_cycles: int
+    seed_price: int
+    sell_price: int
     seed_item: str
     product_item: str
 

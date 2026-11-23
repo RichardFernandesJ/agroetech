@@ -50,7 +50,7 @@ mercado e a sede da fazenda na casa.
 | Catálogo de culturas | Implementado (5 culturas) |
 | Cenário em Ilha e Câmera Pan/Zoom | Implementado (God-view, sem avatar físico) |
 | Feedback visual de lavouras e colheita | Implementado (brotos, plantas maduras, badge pulsante e recompensas flutuantes) |
-| Economia (AGC) | Planejado — Fase 4 |
+| Economia (AGC) | Em andamento — Fase 4 (carteira, compra e venda NPC) |
 | Animais, construções, fabricação | Planejado — Fase 5 |
 | Mercado entre jogadores | Planejado — Fase 6 |
 | XP, níveis, habilidades | Planejado |
@@ -140,6 +140,13 @@ como o gestor supremo da fazenda:
   `TradeOffers`, `TradeItems`.
 - Requisitos: histórico, taxas, idempotência, transações atômicas, auditoria e
   prevenção de duplicação.
+- **Implementado (entreposto NPC):**
+  - Crédito inicial único de 100 AGC (única emissão sem contrapartida).
+  - Sementes compradas do entreposto: milho 8, cenoura 14, tomate 22, morango 30, café 90.
+  - Safras vendidas ao entreposto: milho 5, cenoura 6, tomate 6, morango 6, café 9 (por unidade).
+  - Taxa de 5% sobre vendas, arredondada para baixo — é um sumidouro de moeda.
+  - Valores em `backend/app/game/catalog.py` e `economy.py`; o cliente nunca envia preço.
+  - Interação 100% por mouse: botões ×1, ×5 e Máx/Tudo, sem digitar quantidades.
 - Fontes de moeda devem ter sumidouros equivalentes (sementes, construções,
   taxas, melhorias) para evitar inflação.
 
@@ -152,6 +159,7 @@ como o gestor supremo da fazenda:
 
 ## 8. Identidade visual
 
+- Estilo: **pixel art moderno** — pixels nítidos, paleta limpa e saturação controlada, sombras suaves e HUD em DOM nítido por cima.
 - Pixel art top-down, sem suavização (`pixelArt`, `roundPixels`).
 - Personagens 32×32; tiles 16×16 ou 32×32.
 - Paleta rural: verdes dessaturados, terra, madeira, pedra e céu em gradiente.

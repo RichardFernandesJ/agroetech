@@ -22,6 +22,17 @@ test("cadastro, perfil, HUD da ilha e sessão persistente", async ({ page }) => 
   await page.locator(".hud-btn-zoom").first().click();
   await page.locator(".hud-btn-reset").click();
 
+  // Economia (Fase 4): saldo inicial e compra de sementes só com cliques.
+  await expect(page.locator(".hud-balance")).toContainText("100 AGC");
+  await page.locator(".hud-balance").click();
+  await page.getByRole("button", { name: "×1" }).first().click();
+  await expect(page.locator(".market-balance")).toContainText("92");
+  await expect(page.locator(".market-message")).toContainText("Comprou 1×");
+  await page.getByRole("tab", { name: "Extrato" }).click();
+  await expect(page.getByText("Compra de sementes")).toBeVisible();
+  await page.getByRole("button", { name: "Fechar" }).click();
+  await expect(page.locator(".hud-balance")).toContainText("92 AGC");
+
   // Sessão persiste após recarregar (JWT) e dispensa novo login.
   await page.reload();
   await expect(page.locator(".hud-name")).toHaveText("Ana");

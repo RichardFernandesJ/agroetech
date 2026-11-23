@@ -21,6 +21,7 @@ import { session } from "@/state/session";
 import { HouseModal } from "@/ui/house-modal";
 import { Hud } from "@/ui/hud";
 import { MarketModal } from "@/ui/market-modal";
+import { economyService } from "@/services/economy-service";
 import { PlantingModal } from "@/ui/planting-modal";
 
 const MIN_ZOOM = 0.45;
@@ -44,6 +45,7 @@ export class FarmScene extends Phaser.Scene {
   private catalogCrops: CropCatalogItem[] = [];
   private plantingsByPlot = new Map<number, Planting>();
   private inventoryItems: InventoryItem[] = [];
+  private balance = 0;
 
   // Sprites visuais sobre os talhões
   private cropSprites = new Map<number, Phaser.GameObjects.Image>();
@@ -96,6 +98,7 @@ export class FarmScene extends Phaser.Scene {
       onZoomOut: () => this.zoomOut(),
       onResetView: () => this.resetView(),
       onHarvestAll: () => this.harvestAllPlots(),
+      onOpenMarket: () => this.openMarketModal(),
     });
 
     void this.initializeGameData(character);
@@ -345,9 +348,20 @@ export class FarmScene extends Phaser.Scene {
   }
 
   private openMarketModal(): void {
+    if (!this.property || !this.token) {
+      return;
+    }
+
     this.activeModal?.destroy();
     this.activeModal = new MarketModal({
-      items: this.inventoryItems,
+      propertyId: this.property.id,
+      token: this.token,
+      balance: this.balance,
+      onChange: (balance, items) => {
+        this.balance = balance;
+        this.inventoryItems = items;
+        this.hud?.setBalance(balance);
+      },
       onClose: () => {
         this.activeModal?.destroy();
         this.activeModal = null;
@@ -531,7 +545,7 @@ export class FarmScene extends Phaser.Scene {
       this.catalogCrops = crops;
       this.hud?.setFarm(property.name, property.plot_count);
 
-      await Promise.all([this.syncPlantings(), this.refreshInventory()]);
+      await Promise.all([this.syncPlantings(), this.refreshInventory(), this.refreshBalance()]);
     } catch {
       this.hud?.setFarm("Fazenda da Ilha", 6);
     }
@@ -562,6 +576,19 @@ export class FarmScene extends Phaser.Scene {
       this.hud?.setReadyHarvestCount(readyCount);
     } catch {
       // Ignora falhas temporárias de sincronização
+    }
+  }
+
+  private async refreshBalance(): Promise<void> {
+    if (!this.token) {
+      return;
+    }
+
+    try {
+      this.balance = (await economyService.getWallet(this.token)).balance;
+      this.hud?.setBalance(this.balance);
+    } catch {
+      // Mantém o último saldo conhecido
     }
   }
 

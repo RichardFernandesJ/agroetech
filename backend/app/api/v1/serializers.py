@@ -29,6 +29,8 @@ def serialize_crop(crop: CropDefinition) -> CropRead:
         yield_quantity=crop.yield_quantity,
         seed_yield=crop.seed_yield,
         max_cycles=crop.max_cycles,
+        seed_price=crop.seed_price,
+        sell_price=crop.sell_price,
         seed_item=crop.seed_item,
         product_item=crop.product_item,
     )

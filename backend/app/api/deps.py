@@ -16,12 +16,15 @@ from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.planting_repository import PlantingRepository
 from app.repositories.property_repository import PropertyRepository
 from app.repositories.user_repository import UserRepository
+from app.repositories.wallet_repository import WalletRepository
 from app.services.auth_service import AuthService
 from app.services.character_service import CharacterService
 from app.services.inventory_service import InventoryService
+from app.services.market_service import MarketService
 from app.services.planting_service import PlantingService
 from app.services.production_service import ProductionService
 from app.services.property_service import PropertyService
+from app.services.wallet_service import WalletService
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
@@ -67,6 +70,19 @@ def get_inventory_service(db: DbSession) -> InventoryService:
     return InventoryService(db, InventoryRepository(db))
 
 
+def get_wallet_service(db: DbSession) -> WalletService:
+    return WalletService(db, WalletRepository(db))
+
+
+def get_market_service(
+    db: DbSession,
+    properties: Annotated[PropertyService, Depends(get_property_service)],
+    inventory: Annotated[InventoryService, Depends(get_inventory_service)],
+    wallets: Annotated[WalletService, Depends(get_wallet_service)],
+) -> MarketService:
+    return MarketService(properties, inventory, wallets)
+
+
 def get_character_service(
     db: DbSession,
     properties: Annotated[PropertyService, Depends(get_property_service)],
@@ -97,3 +113,5 @@ InventoryServiceDep = Annotated[InventoryService, Depends(get_inventory_service)
 ProductionServiceDep = Annotated[ProductionService, Depends(get_production_service)]
 PlantingServiceDep = Annotated[PlantingService, Depends(get_planting_service)]
 CharacterServiceDep = Annotated[CharacterService, Depends(get_character_service)]
+WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
+MarketServiceDep = Annotated[MarketService, Depends(get_market_service)]

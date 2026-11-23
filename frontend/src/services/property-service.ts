@@ -69,6 +69,8 @@ export interface CropCatalogItem {
   grow_seconds: number;
   yield_quantity: number;
   max_cycles: number;
+  seed_price: number;
+  sell_price: number;
   seed_item: string;
   product_item: string;
 }

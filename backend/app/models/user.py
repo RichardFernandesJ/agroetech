@@ -13,6 +13,7 @@ from app.models.base import Base, TimestampMixin
 if TYPE_CHECKING:
     from app.models.character import Character
     from app.models.property import Property
+    from app.models.wallet import Wallet
 
 
 class User(Base, TimestampMixin):
@@ -30,6 +31,11 @@ class User(Base, TimestampMixin):
         lazy="selectin",
     )
     character: Mapped[Character | None] = relationship(
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    wallet: Mapped[Wallet | None] = relationship(
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",

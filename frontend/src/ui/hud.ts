@@ -10,12 +10,14 @@ export interface HudActions {
   onZoomOut?: () => void;
   onResetView?: () => void;
   onHarvestAll?: () => void;
+  onOpenMarket?: () => void;
 }
 
 export class Hud {
   private readonly root: HTMLDivElement;
   private readonly nameElement: HTMLHeadingElement;
   private readonly farmElement: HTMLParagraphElement;
+  private readonly balanceElement: HTMLParagraphElement;
   private readonly promptElement: HTMLDivElement;
   private readonly promptLabel: HTMLSpanElement;
   private readonly toastElement: HTMLDivElement;
@@ -43,7 +45,16 @@ export class Hud {
     this.farmElement.className = "hud-farm";
     this.farmElement.textContent = "Carregando fazenda...";
 
-    card.append(eyebrow, this.nameElement, this.farmElement);
+    // Saldo clicável: atalho para o mercado (jogo 100% por mouse).
+    this.balanceElement = document.createElement("p");
+    this.balanceElement.className = "hud-balance";
+    this.balanceElement.setAttribute("role", "button");
+    this.balanceElement.tabIndex = 0;
+    this.balanceElement.title = "Abrir o mercado";
+    this.balanceElement.textContent = "🪙 — AGC";
+    this.balanceElement.addEventListener("click", () => actions?.onOpenMarket?.());
+
+    card.append(eyebrow, this.nameElement, this.farmElement, this.balanceElement);
 
     const hint = document.createElement("p");
     hint.className = "hud-hint";
@@ -111,6 +122,10 @@ export class Hud {
 
   setFarm(name: string, plotCount: number): void {
     this.farmElement.textContent = `${name} · ${plotCount} talhões`;
+  }
+
+  setBalance(balance: number): void {
+    this.balanceElement.textContent = `🪙 ${balance.toLocaleString("pt-BR")} AGC`;
   }
 
   setReadyHarvestCount(readyCount: number): void {

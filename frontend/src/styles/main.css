@@ -749,3 +749,122 @@ form {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ---- Fase 4: carteira e mercado ---- */
+.hud-balance {
+  margin: 8px 0 0;
+  padding: 4px 10px;
+  width: fit-content;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  background: rgba(240, 200, 90, 0.12);
+  color: var(--gold);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.hud-balance:hover {
+  background: rgba(240, 200, 90, 0.24);
+}
+
+.market-balance {
+  margin-left: auto;
+  padding: 6px 12px;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  color: var(--gold);
+  font-family: ui-monospace, Consolas, monospace;
+  white-space: nowrap;
+}
+
+.market-message {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(240, 200, 90, 0.1);
+  color: var(--cream);
+  font-size: 13px;
+}
+
+.trade-note {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.trade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.trade-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(6, 14, 9, 0.65);
+}
+
+.trade-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trade-info small,
+.ledger-balance {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.trade-price {
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.trade-price.gain { color: #8fd694; }
+.trade-price.loss { color: var(--danger); }
+
+.trade-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-trade {
+  min-width: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: rgba(240, 200, 90, 0.14);
+  color: var(--cream);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-trade:hover:not(:disabled) {
+  background: rgba(240, 200, 90, 0.3);
+  border-color: var(--gold);
+}
+
+.btn-trade:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ledger-row { grid-template-columns: 1fr auto auto; }
+
+@media (max-width: 560px) {
+  .trade-row { grid-template-columns: 1fr; }
+  .trade-actions { justify-content: flex-start; }
+}
