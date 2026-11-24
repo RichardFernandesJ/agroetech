@@ -6,52 +6,12 @@ from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.game import progression
 from app.game.buildings import BUILDINGS, STARTING_PLOTS
 from app.models.planting import Planting
-from app.models.progress import PlayerProgress
 from app.models.wallet import Wallet, WalletLedgerEntry
+from tests.helpers import boost_player
 
 Headers = dict[str, str]
-
-
-async def _user_id(client: AsyncClient, headers: Headers) -> uuid.UUID:
-    return uuid.UUID((await client.get("/api/v1/auth/me", headers=headers)).json()["id"])
-
-
-async def _boost(
-    client: AsyncClient,
-    headers: Headers,
-    session_factory: async_sessionmaker[AsyncSession],
-    *,
-    level: int,
-    agc: int = 0,
-) -> None:
-    """Define o nível do jogador e credita AGC (com linha no ledger, para conciliar)."""
-    await client.get("/api/v1/wallet", headers=headers)  # cria a carteira
-    user_id = await _user_id(client, headers)
-    async with session_factory() as session:
-        progress = await session.scalar(
-            select(PlayerProgress).where(PlayerProgress.user_id == user_id)
-        )
-        xp = progression.total_xp_for_level(level)
-        if progress is None:
-            session.add(PlayerProgress(user_id=user_id, xp=xp))
-        else:
-            progress.xp = xp
-        if agc:
-            wallet = await session.scalar(select(Wallet).where(Wallet.user_id == user_id))
-            assert wallet is not None
-            wallet.balance += agc
-            session.add(
-                WalletLedgerEntry(
-                    wallet_id=wallet.id,
-                    kind="test_grant",
-                    amount=agc,
-                    balance_after=wallet.balance,
-                )
-            )
-        await session.commit()
 
 
 async def _state(client: AsyncClient, headers: Headers, property_id: str) -> dict:
@@ -100,7 +60,7 @@ async def test_catalog_is_public(client: AsyncClient) -> None:
     response = await client.get("/api/v1/catalog/buildings")
     assert response.status_code == 200
     body = {b["id"]: b for b in response.json()}
-    assert set(body) == {"sede", "poco"}
+    assert set(body) == {"sede", "poco", "galinheiro", "estabulo"}
     assert [lvl["plots"] for lvl in body["sede"]["levels"]] == [6, 8, 10, 12]
     assert body["poco"]["levels"][0]["effects"] == [
         {"stat": "crop_grow_time", "value_bp": -200, "scope": None}
@@ -139,7 +99,7 @@ async def test_upgrade_requires_funds_without_side_effects(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=10)
+    await boost_player(client, auth_headers, session_factory, level=10)
     response = await _upgrade(client, auth_headers, property_id, "sede")  # 150 > 100
     assert response.status_code == 422
     state = await _state(client, auth_headers, property_id)
@@ -154,7 +114,7 @@ async def test_unknown_building_and_foreign_property(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=10, agc=1000)
+    await boost_player(client, auth_headers, session_factory, level=10, agc=1000)
     assert (await _upgrade(client, auth_headers, property_id, "castelo")).status_code == 404
 
     await client.post(
@@ -176,7 +136,7 @@ async def test_well_upgrade_charges_and_speeds_up_new_plantings(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=2)
+    await boost_player(client, auth_headers, session_factory, level=2)
     response = await _upgrade(client, auth_headers, property_id, "poco")
     assert response.status_code == 200, response.text
     assert _building(response.json(), "poco")["level"] == 1
@@ -201,7 +161,7 @@ async def test_well_stacks_with_talents_through_the_modifier_engine(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=5, agc=500)
+    await boost_player(client, auth_headers, session_factory, level=5, agc=500)
     await _upgrade(client, auth_headers, property_id, "poco")  # -2%
     talent = await client.post(
         "/api/v1/talents/allocate",
@@ -226,7 +186,7 @@ async def test_house_upgrade_unlocks_new_plots(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=3, agc=100)
+    await boost_player(client, auth_headers, session_factory, level=3, agc=100)
 
     def plant(plot: int):
         return client.post(
@@ -252,7 +212,7 @@ async def test_max_level_and_full_progression(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=50, agc=10_000)
+    await boost_player(client, auth_headers, session_factory, level=50, agc=10_000)
     for _ in range(3):
         assert (await _upgrade(client, auth_headers, property_id, "poco")).status_code == 200
     again = await _upgrade(client, auth_headers, property_id, "poco")
@@ -262,7 +222,7 @@ async def test_max_level_and_full_progression(
         assert (await _upgrade(client, auth_headers, property_id, "sede")).status_code == 200
     state = await _state(client, auth_headers, property_id)
     assert state["plot_count"] == 12
-    assert all(b["next"] is None for b in state["buildings"])
+    assert all(_building(state, building_id)["next"] is None for building_id in ("sede", "poco"))
     assert await _balance(client, auth_headers) == 100 + 10_000 - (60 + 200 + 500) - (
         150 + 400 + 900
     )
@@ -274,7 +234,7 @@ async def test_idempotency_prevents_double_charge(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=10, agc=500)
+    await boost_player(client, auth_headers, session_factory, level=10, agc=500)
     first = await _upgrade(client, auth_headers, property_id, "poco", "melhoria-0001")
     second = await _upgrade(client, auth_headers, property_id, "poco", "melhoria-0001")
     assert first.status_code == second.status_code == 200
@@ -292,7 +252,7 @@ async def test_ledger_reconciles_after_upgrades(
     property_id: str,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    await _boost(client, auth_headers, session_factory, level=10, agc=700)
+    await boost_player(client, auth_headers, session_factory, level=10, agc=700)
     await _upgrade(client, auth_headers, property_id, "poco")
     await _upgrade(client, auth_headers, property_id, "sede")
     async with session_factory() as session:

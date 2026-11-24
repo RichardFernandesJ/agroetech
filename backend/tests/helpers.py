@@ -53,3 +53,45 @@ async def inventory_quantities(
     )
     assert response.status_code == 200, response.text
     return {row["item_id"]: row["quantity"] for row in response.json()["items"]}
+
+
+async def boost_player(
+    client: AsyncClient,
+    headers: dict[str, str],
+    session_factory: async_sessionmaker[AsyncSession],
+    *,
+    level: int,
+    agc: int = 0,
+) -> None:
+    """Define o nível do jogador e credita AGC (com linha no ledger, para conciliar)."""
+    from sqlalchemy import select
+
+    from app.game import progression
+    from app.models.progress import PlayerProgress
+    from app.models.wallet import Wallet, WalletLedgerEntry
+
+    await client.get("/api/v1/wallet", headers=headers)  # cria a carteira
+    me = await client.get("/api/v1/auth/me", headers=headers)
+    user_id = uuid.UUID(me.json()["id"])
+    async with session_factory() as session:
+        progress = await session.scalar(
+            select(PlayerProgress).where(PlayerProgress.user_id == user_id)
+        )
+        xp = progression.total_xp_for_level(level)
+        if progress is None:
+            session.add(PlayerProgress(user_id=user_id, xp=xp))
+        else:
+            progress.xp = xp
+        if agc:
+            wallet = await session.scalar(select(Wallet).where(Wallet.user_id == user_id))
+            assert wallet is not None
+            wallet.balance += agc
+            session.add(
+                WalletLedgerEntry(
+                    wallet_id=wallet.id,
+                    kind="test_grant",
+                    amount=agc,
+                    balance_after=wallet.balance,
+                )
+            )
+        await session.commit()

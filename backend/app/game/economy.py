@@ -7,6 +7,7 @@ o frontend nunca envia preço. Preços de compra/venda ficam no catálogo
 
 from __future__ import annotations
 
+from app.game.animals import ANIMALS
 from app.game.catalog import CROPS
 
 # Crédito único dado na criação da carteira. Única emissão sem contrapartida.
@@ -24,7 +25,9 @@ def seed_prices() -> dict[str, int]:
 
 
 def product_prices() -> dict[str, int]:
-    return {crop.product_item: crop.sell_price for crop in CROPS.values()}
+    prices = {crop.product_item: crop.sell_price for crop in CROPS.values()}
+    prices.update({animal.product_item: animal.sell_price for animal in ANIMALS.values()})
+    return prices
 
 
 def sale_fee(gross: int, fee_bp: int = SALE_FEE_BASIS_POINTS) -> int:

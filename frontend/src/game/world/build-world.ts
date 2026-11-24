@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 
 import {
+  BARN,
   BOAT,
   BASE_PLOTS,
   FENCE,
@@ -169,6 +170,22 @@ export function buildWorld(scene: Phaser.Scene): WorldBuild {
     gameObject: house,
     x: HOUSE.x + HOUSE.width / 2,
     y: HOUSE.y + HOUSE.height / 2,
+  });
+
+  // Curral (animais)
+  const barn = scene.add
+    .image(BARN.x, BARN.y, "barn")
+    .setOrigin(0, 0)
+    .setDepth(BARN.y + BARN.height)
+    .setInteractive({ useHandCursor: true });
+
+  interactables.push({
+    id: "barn",
+    label: "Curral da Ilha",
+    message: "Curral da Ilha: crie galinhas, vacas e ovelhas e colete ovos, leite e lã.",
+    gameObject: barn,
+    x: BARN.x + BARN.width / 2,
+    y: BARN.y + BARN.height / 2,
   });
 
   // Lagoa interna de água doce

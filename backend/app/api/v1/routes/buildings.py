@@ -31,6 +31,7 @@ def level_to_read(info: BuildingLevel) -> BuildingLevelRead:
         cost=info.cost,
         min_player_level=info.min_player_level,
         plots=info.plots,
+        capacity=info.capacity,
         effects=[
             EffectRead(stat=effect.stat, value_bp=effect.value_bp, scope=effect.scope)
             for effect in info.effects

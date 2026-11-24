@@ -8,6 +8,8 @@ consulta deste módulo.
 
 from dataclasses import dataclass
 
+from app.game.animals import ANIMALS
+
 
 @dataclass(frozen=True, slots=True)
 class CropDefinition:
@@ -131,6 +133,13 @@ def _build_item_catalog() -> dict[str, ItemDefinition]:
             name=crop.name,
             category="product",
             description=crop.description,
+        )
+    for animal in ANIMALS.values():
+        catalog[animal.product_item] = ItemDefinition(
+            id=animal.product_item,
+            name=animal.product_name,
+            category="product",
+            description=animal.product_description,
         )
     return catalog
 

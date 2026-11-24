@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.core.exceptions import AuthenticationError, InvalidTokenError
 from app.core.security import decode_access_token
 from app.models.user import User
+from app.repositories.animal_repository import AnimalRepository
 from app.repositories.building_repository import BuildingRepository
 from app.repositories.character_repository import CharacterRepository
 from app.repositories.inventory_repository import InventoryRepository
@@ -20,6 +21,7 @@ from app.repositories.property_repository import PropertyRepository
 from app.repositories.talent_repository import TalentRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.wallet_repository import WalletRepository
+from app.services.animal_service import AnimalService
 from app.services.auth_service import AuthService
 from app.services.building_service import BuildingService
 from app.services.character_service import CharacterService
@@ -109,6 +111,24 @@ def get_building_service(
     )
 
 
+def get_animal_service(
+    db: DbSession,
+    properties: Annotated[PropertyService, Depends(get_property_service)],
+    inventory: Annotated[InventoryService, Depends(get_inventory_service)],
+    modifiers: Annotated[ModifierService, Depends(get_modifier_service)],
+) -> AnimalService:
+    return AnimalService(
+        AnimalRepository(db),
+        BuildingRepository(db),
+        InventoryRepository(db),
+        inventory,
+        properties,
+        ProgressService(db, ProgressRepository(db)),
+        WalletService(db, WalletRepository(db)),
+        modifiers,
+    )
+
+
 def get_market_service(
     db: DbSession,
     properties: Annotated[PropertyService, Depends(get_property_service)],
@@ -156,3 +176,4 @@ MarketServiceDep = Annotated[MarketService, Depends(get_market_service)]
 ProgressServiceDep = Annotated[ProgressService, Depends(get_progress_service)]
 TalentServiceDep = Annotated[TalentService, Depends(get_talent_service)]
 BuildingServiceDep = Annotated[BuildingService, Depends(get_building_service)]
+AnimalServiceDep = Annotated[AnimalService, Depends(get_animal_service)]

@@ -703,3 +703,114 @@
 
 .building-card { padding: 12px 14px; }
 .building-desc, .building-now, .building-next p { margin-top: 5px; }
+
+/* ------------------------------------------------------------------ */
+/* Painel de animais                                                   */
+/* ------------------------------------------------------------------ */
+
+.animals-panel {
+  width: min(720px, 100%);
+}
+
+.housing-row,
+.animals-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.housing-chip {
+  padding: 5px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--cream);
+  font-size: 12px;
+}
+
+.housing-chip.empty {
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.animals-subtitle {
+  margin: 18px 0 8px;
+  color: var(--gold);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.animals-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.animal-card {
+  padding: 12px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(6, 14, 9, 0.6);
+}
+
+.animal-card.hungry {
+  border-color: rgba(240, 138, 122, 0.45);
+}
+
+.animal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.animal-head strong {
+  display: block;
+  color: var(--cream);
+}
+
+.animal-head small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.animal-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(217, 185, 106, 0.12);
+  font-size: 22px;
+}
+
+.animal-stored {
+  margin-left: auto;
+  color: var(--gold-strong);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+}
+
+.animal-next {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.animal-feed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.animal-card .primary-button {
+  margin-top: 10px;
+}

@@ -356,6 +356,12 @@ Conteúdo em `backend/app/game/buildings.py`.
 | | 2 | 150 | 3 | 8 talhões |
 | | 3 | 400 | 8 | 10 talhões |
 | | 4 | 900 | 15 | 12 talhões |
+| Galinheiro | 1 | 80 | 2 | abriga 3 animais |
+| | 2 | 250 | 6 | 6 animais |
+| | 3 | 600 | 12 | 10 animais |
+| Estábulo | 1 | 200 | 4 | abriga 2 animais (vacas e ovelhas) |
+| | 2 | 500 | 9 | 4 animais |
+| | 3 | 1100 | 16 | 6 animais |
 | Poço da Ilha | 1 | 60 | 2 | tempo de crescimento −2% |
 | | 2 | 200 | 6 | −4% |
 | | 3 | 500 | 12 | −6% |
@@ -383,6 +389,47 @@ construção desconhecida ou fazenda de outro jogador. O efeito dos talhões val
 
 Cada jogador pode ter **uma** fazenda (`409` na segunda) e ela sempre começa com 6
 talhões (`plot_count` maior que 6 retorna `422`). Mais talhões só pela Casa da Fazenda.
+
+### Animais (Fase 5)
+
+Animais só produzem enquanto **alimentados**. Cada porção de ração (uma safra do
+inventário) mantém o animal alimentado por 30 minutos; a ração acumulada tem teto de
+8 horas, e o estoque de produtos do animal guarda no máximo o equivalente a 8 horas.
+Assim a produção offline é determinística e limitada (nada de acumular por dias).
+Conteúdo em `backend/app/game/animals.py`.
+
+| Espécie | Abrigo | Preço | Nível | Produto (a cada) | Valor | Ração |
+|---|---|---:|---:|---|---:|---|
+| Galinha | Galinheiro | 60 | 2 | Ovo (15 min) | 4 | Milho |
+| Vaca | Estábulo | 300 | 5 | Leite (20 min) | 9 | Cenoura |
+| Ovelha | Estábulo | 220 | 7 | Lã (40 min) | 14 | Milho |
+
+Os produtos (`animal_ovo`, `animal_leite`, `animal_la`) vão para o inventário e são
+vendidos no mercado como qualquer produto (com bônus de preço e taxa dos talentos).
+
+#### GET `/api/v1/properties/{property_id}/animals` 🔒
+
+Contabiliza a produção até agora e devolve: `animals` (`stored`, `max_stored`,
+`is_fed`, `fed_seconds_left`, `seconds_to_next`), `housings` (`capacity`/`used` por
+abrigo) e `species` (preço, nível, `can_buy` e `blocked_reason`), além de `balance` e
+`player_level`.
+
+#### POST `/api/v1/properties/{property_id}/animals/buy` 🔒 · `{ "species": "galinha" }`
+
+Compra um animal (ledger `animal_purchase`). Exige nível de jogador, abrigo construído
+com vaga e saldo (`422` com o motivo). Aceita `Idempotency-Key` (reenvio não cobra de
+novo; `409` se a chave for de outra operação). `404` para espécie desconhecida.
+
+#### POST `/api/v1/properties/{property_id}/animals/{animal_id}/feed` 🔒 · `{ "units": 1 }`
+#### POST `/api/v1/properties/{property_id}/animals/feed-all` 🔒 · `{ "units": 4 }`
+
+Consome ração do inventário (`units` de 1 a 64, limitado pelo estoque e pelo teto de
+8 h). `units_fed` informa o que foi usado. `422` sem ração ou com os animais já cheios.
+
+#### POST `/api/v1/properties/{property_id}/animals/collect` 🔒
+
+Coleta todos os produtos prontos para o inventário e concede XP (`xp_gained`, com o
+bônus de talentos). `422` se não houver nada pronto.
 
 ## 7. Infra
 

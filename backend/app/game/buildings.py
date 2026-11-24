@@ -19,6 +19,7 @@ class BuildingLevel:
     min_player_level: int
     effects: tuple[Effect, ...] = ()
     plots: int | None = None  # total de talhões da propriedade neste nível
+    capacity: int | None = None  # animais abrigados neste nível (abrigos)
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,6 +78,32 @@ BUILDINGS: dict[str, BuildingDefinition] = {
         ),
     ),
 }
+
+
+# Abrigos de animais (veja game/animals.py). O estábulo abriga vacas e ovelhas.
+BUILDINGS["galinheiro"] = BuildingDefinition(
+    id="galinheiro",
+    name="Galinheiro",
+    description="Abriga galinhas. Cada melhoria aumenta quantas você pode criar.",
+    initial_level=0,
+    levels=(
+        BuildingLevel(level=1, cost=80, min_player_level=2, capacity=3),
+        BuildingLevel(level=2, cost=250, min_player_level=6, capacity=6),
+        BuildingLevel(level=3, cost=600, min_player_level=12, capacity=10),
+    ),
+)
+
+BUILDINGS["estabulo"] = BuildingDefinition(
+    id="estabulo",
+    name="Estábulo",
+    description="Abriga vacas e ovelhas. Cada melhoria aumenta a lotação.",
+    initial_level=0,
+    levels=(
+        BuildingLevel(level=1, cost=200, min_player_level=4, capacity=2),
+        BuildingLevel(level=2, cost=500, min_player_level=9, capacity=4),
+        BuildingLevel(level=3, cost=1100, min_player_level=16, capacity=6),
+    ),
+)
 
 
 def get_building(building_id: str) -> BuildingDefinition | None:

@@ -90,6 +90,9 @@ function handleClick(deps: WorldInteractionDeps, item: WorldObjectInteractable):
     case "market":
       panels.openMarket();
       return;
+    case "barn":
+      panels.openAnimals();
+      return;
     case "well":
       panels.openBuildings("poco");
       return;

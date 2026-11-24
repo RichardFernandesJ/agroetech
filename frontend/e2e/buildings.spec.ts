@@ -29,7 +29,7 @@ test("construções: melhorar o poço e a casa por cliques", async ({ page }) =>
   boostPlayer();
 
   await page.locator('[data-menu="buildings"]').click();
-  await expect(page.locator(".building-card")).toHaveCount(2);
+  await expect(page.locator(".building-card")).toHaveCount(4);
   await expect(page.locator(".building-card").nth(1)).toContainText("Nível 0 de 3");
 
   // Poço nível 1.

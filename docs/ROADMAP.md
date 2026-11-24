@@ -87,9 +87,11 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 - [x] Construções melhoráveis: Casa da Fazenda (expansão de terreno) e Poço (irrigação).
 - [x] Bônus de construções integrado ao motor de modificadores (`ModifierService`).
 - [x] Uma fazenda por jogador e talhões iniciais fixos (corrige brecha de criação).
-- [ ] Mais construções: celeiro (armazenamento), estábulo, galinheiro.
-- [ ] Animais (galinha, vaca, ovelha, porco, cabra, abelha).
-- [ ] Alimentação, ciclo de produção e melhorias.
+- [x] Abrigos: Galinheiro e Estábulo (capacidade por nível).
+- [x] Animais: galinha, vaca e ovelha, com alimentação, produção offline determinística, coleta e XP.
+- [ ] Animais: porco, cabra e abelha (novas entradas no catálogo) e melhorias de animais.
+- [ ] Ramo Pecuária da árvore de talentos (produção, tempo, ração, qualidade).
+- [ ] Celeiro (armazenamento) e decoração.
 - [ ] Receitas e estações (moinho, padaria, queijaria, engenho, cozinha).
 - [ ] `ProductionJobs` para processos com duração.
 
@@ -144,6 +146,7 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Próxima entrega recomendada
 
-**Fase 5, animais:** estruturas de criação (galinheiro, estábulo) como construções do
-catálogo, animais com alimentação e produção offline determinística, reaproveitando
-`buildings`, `ModifierService`, `ModalManager` e o menu do HUD. A `FarmScene` já foi dividida em módulos.
+**Fase 5, fabricação:** receitas e estações (moinho, padaria, queijaria) com
+`ProductionJobs` de duração, transformando safras e produtos animais (ovos, leite, lã)
+em itens de maior valor, reaproveitando `buildings`, o motor de modificadores e o menu
+do HUD. Em seguida, o ramo Pecuária dos talentos.

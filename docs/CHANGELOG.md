@@ -11,6 +11,22 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.8.0] — 2026-11-23
+
+### Adicionado
+
+- **Animais (Fase 5):** galinha, vaca e ovelha. Tabela `animals` (migração `0007_animals`), catálogo em `game/animals.py` e regras puras de alimentação e produção (`advance` e `feed`), testadas sem banco.
+- Abrigos como construções: **Galinheiro** e **Estábulo** (capacidade por nível); `BuildingLevel.capacity`.
+- Endpoints `GET /properties/{id}/animals`, `POST .../animals/buy` (idempotente), `.../{animal}/feed`, `.../feed-all` e `.../collect`.
+- Produtos animais (`animal_ovo`, `animal_leite`, `animal_la`) no catálogo de itens, vendáveis no mercado.
+- Painel **🐔 Animais** e **Curral** no mapa (clicável), com alimentação por ×1/×4/Máx, coleta e compra.
+- 24 testes novos (138 no total), incluindo equivalência entre muitas sincronizações pequenas e uma grande, e um teste de balanceamento da economia animal. E2E completo: construir abrigo, comprar, alimentar, avançar o relógio e coletar.
+
+### Alterado
+
+- `tests/helpers.boost_player` (nível + AGC para os testes) compartilhado por vários testes.
+- E2E ganhou o utilitário `e2e/support/e2e_db.py` (dar itens e avançar o relógio no SQLite descartável).
+
 ## [0.7.1] — 2026-11-23
 
 ### Alterado

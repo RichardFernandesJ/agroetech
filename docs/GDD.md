@@ -161,6 +161,20 @@ como o gestor supremo da fazenda:
 - Cada jogador tem uma fazenda. Todas as melhorias são pagas pelo servidor, atômicas e
   idempotentes. Toda a interação é por clique (menu **🏗️ Construções**, a Casa ou o Poço).
 
+## 6.2 Animais
+
+- Três espécies: galinha (ovos), vaca (leite) e ovelha (lã). Porcos, cabras e abelhas
+  entram só com novas linhas no catálogo.
+- Cada animal precisa de **abrigo** (Galinheiro ou Estábulo, que se melhoram na tela de
+  Construções) com vaga, de nível de jogador e de AGC.
+- **Alimentação:** as safras do inventário são a ração (milho ou cenoura). 1 porção = 30
+  min de comida; o acúmulo máximo é de 8 h. Sem comida, o animal para de produzir.
+- **Produção offline determinística:** o servidor soma o tempo alimentado; cada animal
+  guarda até 8 h de produtos. Coletar é por clique (**Coletar tudo**) e rende XP.
+- **Economia:** a ração vira produto de maior valor (1,6× a 2,3× do custo) e o animal se
+  paga em 10 a 20 horas de produção. Os produtos vendem no entreposto como qualquer safra.
+- Interface: botão **🐔 Animais** ou clique no **Curral** do mapa; alimentar por ×1, ×4 e Máx.
+
 ## 7. Progressão
 
 **Implementado:** XP e nível (1 a 50) por jogador. Plantar rende 2 XP; colher rende

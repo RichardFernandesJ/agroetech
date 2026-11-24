@@ -12,6 +12,7 @@ class BuildingLevelRead(BaseModel):
     cost: int
     min_player_level: int
     plots: int | None
+    capacity: int | None = None
     effects: list[EffectRead]
 
 

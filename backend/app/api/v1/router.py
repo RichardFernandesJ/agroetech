@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.routes import (
+    animals,
     auth,
     buildings,
     catalog,
@@ -30,3 +31,4 @@ api_router.include_router(market.router)
 api_router.include_router(progress.router)
 api_router.include_router(talents.router)
 api_router.include_router(buildings.router)
+api_router.include_router(animals.router)

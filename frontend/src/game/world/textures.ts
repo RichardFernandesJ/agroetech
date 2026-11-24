@@ -326,6 +326,48 @@ function drawMarket(graphics: Phaser.GameObjects.Graphics): void {
   graphics.fillCircle(86, 58, 4);
 }
 
+function drawBarn(graphics: Phaser.GameObjects.Graphics): void {
+  graphics.fillStyle(0x000000, 0.2);
+  graphics.fillEllipse(64, 106, 116, 12);
+
+  // Corpo vermelho com ripas
+  graphics.fillStyle(0xb8473a, 1);
+  graphics.fillRect(10, 40, 108, 66);
+  graphics.fillStyle(0x9c3a30, 1);
+  for (let x = 18; x < 116; x += 12) {
+    graphics.fillRect(x, 42, 2, 62);
+  }
+  graphics.fillStyle(0x8a3128, 1);
+  graphics.fillRect(10, 98, 108, 8);
+
+  // Telhado em duas águas
+  graphics.fillStyle(0x6d4a2c, 1);
+  graphics.fillTriangle(2, 46, 126, 46, 64, 6);
+  graphics.fillStyle(0x5a3b22, 1);
+  graphics.fillTriangle(2, 46, 64, 6, 64, 46);
+  graphics.lineStyle(3, 0x3f2916, 1);
+  graphics.strokeTriangle(2, 46, 126, 46, 64, 6);
+  graphics.fillStyle(0xf2e2c4, 1);
+  graphics.fillCircle(64, 28, 6);
+  graphics.lineStyle(2, 0x3f2916, 1);
+  graphics.strokeCircle(64, 28, 6);
+
+  // Porta com cruz branca
+  graphics.fillStyle(0x7a5233, 1);
+  graphics.fillRect(40, 62, 48, 44);
+  graphics.lineStyle(3, 0xf2e2c4, 1);
+  graphics.strokeRect(40, 62, 48, 44);
+  graphics.lineBetween(40, 62, 88, 106);
+  graphics.lineBetween(88, 62, 40, 106);
+
+  // Fardo de feno ao lado
+  graphics.fillStyle(0xd8b25a, 1);
+  graphics.fillRect(94, 90, 22, 16);
+  graphics.lineStyle(1, 0xa8832e, 1);
+  graphics.strokeRect(94, 90, 22, 16);
+  graphics.lineBetween(94, 98, 116, 98);
+}
+
 function drawWell(graphics: Phaser.GameObjects.Graphics): void {
   graphics.fillStyle(0x000000, 0.2);
   graphics.fillEllipse(24, 44, 34, 8);
@@ -484,6 +526,7 @@ export function createWorldTextures(scene: Phaser.Scene): void {
   makeTexture(scene, "plot", 64, 64, drawPlot);
   makeTexture(scene, "market", 128, 96, drawMarket);
   makeTexture(scene, "well", 48, 48, drawWell);
+  makeTexture(scene, "barn", 128, 112, drawBarn);
   makeTexture(scene, "crop-sprout", 64, 64, drawCropSprout);
   makeTexture(scene, "crop-growing", 64, 64, drawCropGrowing);
   makeTexture(scene, "crop-mature-milho", 64, 64, (graphics) => drawCropMature(graphics, "milho"));

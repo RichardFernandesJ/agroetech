@@ -7,6 +7,8 @@ export interface BuildingLevel {
   min_player_level: number;
   /** Total de talhões da fazenda neste nível (só a Casa da Fazenda). */
   plots: number | null;
+  /** Animais abrigados neste nível (galinheiro, estábulo). */
+  capacity: number | null;
   effects: TalentEffect[];
 }
 

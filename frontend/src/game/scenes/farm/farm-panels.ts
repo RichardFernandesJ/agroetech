@@ -2,6 +2,7 @@ import Phaser from "phaser";
 
 import { gameState } from "@/state/game-state";
 import { session } from "@/state/session";
+import { AnimalsModal } from "@/ui/animals-modal";
 import { BuildingsModal } from "@/ui/buildings-modal";
 import { HouseModal } from "@/ui/house-modal";
 import type { Hud, HudMenuItem } from "@/ui/hud";
@@ -43,6 +44,12 @@ export class FarmPanels {
         label: "🏗️ Construções",
         title: "Melhorar a casa, o poço e outras construções",
         onClick: () => this.openBuildings(),
+      },
+      {
+        id: "animals",
+        label: "🐔 Animais",
+        title: "Criar, alimentar e coletar produtos dos animais",
+        onClick: () => this.openAnimals(),
       },
       {
         id: "talents",
@@ -139,6 +146,30 @@ export class FarmPanels {
             controller.applyBalance(result.balance);
             controller.updatePlotCount(result.plot_count);
           },
+          onClose: close,
+        }),
+    );
+  }
+
+  openAnimals(): void {
+    const { state, controller } = this.deps;
+    if (!state.property || !state.token) {
+      return;
+    }
+
+    const propertyId = state.property.id;
+    const token = state.token;
+    this.modals.open(
+      (close) =>
+        new AnimalsModal({
+          propertyId,
+          token,
+          onChange: () => {
+            void controller.refreshInventory();
+            void controller.refreshBalance();
+            void controller.refreshProgress(true);
+          },
+          onOpenBuildings: () => this.openBuildings(),
           onClose: close,
         }),
     );

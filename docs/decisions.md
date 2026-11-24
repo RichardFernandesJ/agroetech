@@ -245,3 +245,25 @@ AGENTS.md pede expansão de terrenos, melhorias e evitar regras espalhadas.
 **Consequências:** Estruturas novas (celeiro, galinheiro, estábulo) viram entradas do
 catálogo + um card no painel. A expansão visual de talhões segue o layout do mapa
 (colunas a leste); novas estruturas físicas precisarão de posição própria no mapa.
+
+## ADR-017 — Produção animal por tempo alimentado, com tetos
+
+**Contexto:** A Fase 5 exige animais, alimentação e produção offline (AGENTS.md §6 e §8),
+sem processo por jogador, determinística e com limite de capacidade.
+
+**Decisão:**
+1. O estado do animal é `fed_until`, `progress_seconds`, `last_sync_at` e `stored`. A
+   produção é uma função pura (`advance`) do tempo alimentado entre duas sincronizações;
+   muitas sincronizações pequenas dão o mesmo resultado que uma grande (testado).
+2. Tetos: ração acumulada (8 h) e produtos guardados (8 h de produção). Nada de acumular
+   por dias; o excedente é perdido.
+3. A ração são safras do inventário, o que liga plantio, animais e mercado em uma cadeia
+   e faz a economia consumir o que a lavoura produz.
+4. Abrigos são construções do catálogo com `capacity`; o estábulo é compartilhado por
+   vacas e ovelhas. A compra reutiliza a carteira travada e a idempotência do mercado.
+5. Sem bônus de talentos próprios ainda: o ramo Pecuária virá depois, com estatísticas novas
+   no motor de modificadores (o XP da coleta já usa `xp_gain`).
+
+**Consequências:** Novas espécies são linhas no catálogo. Fabricação (Fase 5) poderá usar
+os produtos animais como matéria-prima. Modificar o tempo de produção por talentos exigirá
+decidir se vale no momento da alimentação (como o plantio) para evitar efeito retroativo.

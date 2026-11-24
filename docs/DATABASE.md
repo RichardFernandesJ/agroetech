@@ -222,6 +222,22 @@ Uma linha por construção já melhorada na fazenda (sem linha = nível inicial 
 Constraints: `uq_buildings_property_building`, `ck_buildings_level_non_negative`.
 Migração: `0006_buildings`.
 
+### `animals`
+
+Um animal por linha. A produção é derivada dos timestamps (sem processo por jogador).
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `property_id` | UUID | FK `properties.id`, CASCADE, indexado |
+| `species` | VARCHAR(30) | id do catálogo (`galinha`, `vaca`, `ovelha`) |
+| `fed_until` | TIMESTAMPTZ | até quando está alimentado (nulo = nunca) |
+| `last_sync_at` | TIMESTAMPTZ | última contabilização da produção |
+| `progress_seconds` | FLOAT | segundos alimentados rumo ao próximo produto, `>= 0` |
+| `stored` | INTEGER | produtos prontos para coleta, `>= 0` |
+
+Migração: `0007_animals`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:
