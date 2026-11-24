@@ -15,6 +15,7 @@ from alembic.config import Config
 
 import app.models  # noqa: F401  (registra todos os models no metadata)
 from app.models.base import Base
+from tests.migration_utils import actual_schema, diff_schemas, expected_schema
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -44,7 +45,7 @@ def test_initial_migration_matches_models(tmp_path: Path) -> None:
         assert tables == set(Base.metadata.tables) | {"alembic_version"}
 
         revision = connection.execute("select version_num from alembic_version").fetchone()
-        assert revision == ("0009_animal_modifiers",)
+        assert revision == ("0010_one_property_per_user",)
 
         for table_name, table in Base.metadata.tables.items():
             columns = {
@@ -52,6 +53,14 @@ def test_initial_migration_matches_models(tmp_path: Path) -> None:
                 for row in connection.execute(f"pragma table_info('{table_name}')")  # noqa: S608
             }
             assert columns == set(table.columns.keys()), table_name
+
+        # Índices, restrições únicas e de checagem também precisam estar em paridade.
+        from sqlalchemy import create_engine
+
+        sync_engine = create_engine(f"sqlite:///{database_path.as_posix()}")
+        with sync_engine.connect() as sync_connection:
+            assert diff_schemas(expected_schema(), actual_schema(sync_connection)) == []
+        sync_engine.dispose()
 
         index_sql = connection.execute(
             "select sql from sqlite_master "

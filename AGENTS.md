@@ -468,7 +468,9 @@ O objetivo é construir um jogo real, funcional, escalável e preparado para rec
   - Migrations: `alembic upgrade head` (em `backend/`).
   - Testes backend: `python -m pytest` (em `backend/`).
   - Tipagem frontend: `npx tsc --noEmit` (em `frontend/`).
-  - E2E: Playwright (em `frontend/`), a partir da Fase 3 concluída.
+  - E2E: `npm run test:e2e` (Playwright, em `frontend/`).
+  - PostgreSQL real: `docker compose --profile test run --rm tests-pg` (ou `AGRO_TEST_DATABASE_URL=...` com banco `*_test`).
+  - Fumaça da stack: `python scripts/smoke.py` (guia completo em `docs/VALIDATION.md`).
 - Definição de pronto de uma fase: testes backend verdes, `tsc` sem erros, documentação (ROADMAP, CHANGELOG, API, DATABASE) atualizada e commit dedicado.
 - Git: um commit por fase ou incremento, mensagem no formato `tipo: descrição` (feat, fix, docs, chore, test). Não manter trabalho de fases concluídas sem commit.
 - Arquivo de instruções oficial: `AGENTS.md` (não manter cópias como `AGENTS.md.txt`).

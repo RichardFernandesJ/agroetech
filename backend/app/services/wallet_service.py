@@ -5,8 +5,9 @@ from collections.abc import Sequence
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import set_committed_value
 
-from app.core.exceptions import GameRuleError
+from app.core.exceptions import ConflictError, GameRuleError
 from app.game.economy import INITIAL_GRANT_AGC
 from app.models.wallet import Wallet, WalletLedgerEntry
 from app.repositories.wallet_repository import WalletRepository
@@ -65,7 +66,9 @@ class WalletService:
         if new_balance < 0:
             raise GameRuleError("Saldo de AgroCoin insuficiente.")
 
-        wallet.balance = new_balance
+        if not await self.wallets.compare_and_set_balance(wallet, new_balance):
+            raise ConflictError("O saldo mudou durante a operação. Tente novamente.")
+        set_committed_value(wallet, "balance", new_balance)
         return await self.wallets.add_entry(
             WalletLedgerEntry(
                 wallet_id=wallet.id,

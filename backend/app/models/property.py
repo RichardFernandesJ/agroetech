@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Uuid
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.time import utcnow
@@ -21,11 +21,14 @@ if TYPE_CHECKING:
 
 class Property(Base, TimestampMixin):
     __tablename__ = "properties"
+    __table_args__ = (
+        # Uma fazenda por jogador (também protege contra criação simultânea).
+        Index("uq_properties_owner", "owner_id", unique=True),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     owner_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
-        index=True,
         nullable=False,
     )
     name: Mapped[str] = mapped_column(String(120), nullable=False)

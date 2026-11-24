@@ -10,6 +10,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from sqlalchemy.exc import IntegrityError
+
 from app.core.config import settings
 from app.core.exceptions import ConflictError, GameRuleError, NotFoundError
 from app.core.time import ensure_utc, utcnow
@@ -241,9 +243,14 @@ class TalentService:
     async def _ensure_preset(self, user_id: uuid.UUID) -> None:
         if await self.talents.list_presets(user_id):
             return
-        await self.talents.add(
-            TalentPreset(user_id=user_id, name="Build 1", slot=1, is_active=True)
-        )
+        try:
+            async with self.talents.session.begin_nested():
+                await self.talents.add(
+                    TalentPreset(user_id=user_id, name="Build 1", slot=1, is_active=True)
+                )
+        except IntegrityError:
+            # Outra requisição criou o primeiro preset ao mesmo tempo (unique user+slot).
+            pass
 
     async def _get_preset(self, user_id: uuid.UUID, preset_id: uuid.UUID) -> TalentPreset:
         preset = await self.talents.get_preset(user_id, preset_id)

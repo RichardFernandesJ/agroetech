@@ -145,9 +145,16 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 > **MVP completo:** todos os itens do checklist acima estão entregues (falta apenas
 > validar o ciclo no navegador com Docker/PostgreSQL e balancear com dados reais).
 
+## Validação na stack real
+
+- [x] Suíte parametrizável para PostgreSQL (`AGRO_TEST_DATABASE_URL`, banco `*_test`) e serviço `tests-pg` no Compose.
+- [x] Testes de PostgreSQL: migrações reais e requisições concorrentes (compra, melhoria, fabricação, colheita, coleta, primeiro acesso, cadastro).
+- [x] Roteiro de fumaça (`scripts/smoke.py`), CI com PostgreSQL (`.github/workflows/ci.yml`) e roteiro de validação (`docs/VALIDATION.md`).
+- [x] Correções de corrida: 409 em violação de unicidade, uma fazenda por jogador no banco, atualização condicional de saldo e estoque.
+- [ ] **Executar** `docker compose up`, `tests-pg` e o checklist manual (exige Docker; ver `docs/VALIDATION.md`).
+
 ## Próxima entrega recomendada
 
-**Fechar a Fase 5 e entrar na Fase 6:** as últimas peças da produção (porco, cabra, abelha,
-engenho e cozinha são só catálogo) e então o multiplayer econômico: mercado global entre
-jogadores, trocas e visitação de fazendas. Antes disso vale validar o ciclo no navegador
-com Docker/PostgreSQL e balancear com dados reais.
+**Executar a validação** de `docs/VALIDATION.md` com Docker (ou deixar o CI rodar no primeiro
+`git push`) e corrigir o que aparecer. Com a stack validada, seguir para o multiplayer econômico
+(Fase 6): mercado global entre jogadores, trocas diretas e visitação de fazendas.

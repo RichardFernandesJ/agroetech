@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-sqlite:
+    name: Backend (SQLite, rápido)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: pytest -q
+
+  backend-postgres:
+    name: Backend (PostgreSQL real)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: agro
+          POSTGRES_PASSWORD: agro
+          POSTGRES_DB: agroetech
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agro -d agroetech"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Banco separado e terminado em _test: a suíte apaga e recria as tabelas.
+      AGRO_TEST_DATABASE_URL: postgresql+asyncpg://agro:agro@localhost:5432/agroetech_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      # Inclui tests/test_postgres.py (migrações reais e requisições concorrentes).
+      - run: pytest -v
+
+  frontend:
+    name: Frontend (tipos, build e E2E)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # O E2E sobe a API (SQLite descartável) e o Vite sozinho.
+      - run: pip install -r backend/requirements.txt
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run typecheck
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: frontend/test-results
+
+  docker:
+    name: Docker Compose (stack completa)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose build
+      - run: docker compose up -d db api
+      - name: Aguardar a API ficar saudável
+        run: |
+          for i in $(seq 1 40); do
+            if curl -fsS http://localhost:8000/health > /dev/null; then exit 0; fi
+            sleep 3
+          done
+          docker compose logs api
+          exit 1
+      - name: Roteiro de fumaça (inclui compras simultâneas)
+        run: python3 scripts/smoke.py http://localhost:8000
+      - name: Logs em caso de falha
+        if: failure()
+        run: docker compose logs
+      - run: docker compose down -v
+        if: always()

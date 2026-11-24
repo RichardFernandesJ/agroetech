@@ -510,7 +510,7 @@ Erros de domínio seguem o formato:
 | 401 | `invalid_token` | Token expirado, malformado ou usuário removido. |
 | 403 | `forbidden` | Conta desativada no login. |
 | 404 | `not_found` | Fazenda, plantio, cultura ou item inexistente (inclusive de outro jogador). |
-| 409 | `conflict` | E-mail/username duplicado ou talhão ocupado. |
+| 409 | `conflict` | E-mail/username duplicado, talhão ocupado, segunda fazenda, saldo alterado por outra operação ou colisão entre duas requisições simultâneas (tente de novo). |
 | 422 | `game_rule_violation` | Sementes insuficientes, talhão inválido, colheita não pronta. |
 
 Erros de validação do Pydantic/FastAPI usam **422** com `detail` em lista, sem

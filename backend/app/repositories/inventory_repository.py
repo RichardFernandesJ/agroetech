@@ -3,8 +3,9 @@
 import uuid
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import set_committed_value
 
 from app.models.inventory import InventoryItem
 from app.repositories.base import BaseRepository
@@ -70,6 +71,25 @@ class InventoryRepository(BaseRepository[InventoryItem]):
             )
             return await self.add(item)
 
-        item.quantity += amount
-        await self.session.flush()
+        # Incremento atômico no banco (nada de ler, somar e gravar de volta).
+        await self.session.execute(
+            update(InventoryItem)
+            .where(InventoryItem.id == item.id)
+            .values(quantity=InventoryItem.quantity + amount)
+            .execution_options(synchronize_session=False)
+        )
+        set_committed_value(item, "quantity", item.quantity + amount)
         return item
+
+    async def try_decrement(self, item: InventoryItem, amount: int) -> bool:
+        """Debita só se ainda houver estoque (``UPDATE ... WHERE quantity >= :amount``)."""
+        result = await self.session.execute(
+            update(InventoryItem)
+            .where(InventoryItem.id == item.id, InventoryItem.quantity >= amount)
+            .values(quantity=InventoryItem.quantity - amount)
+            .execution_options(synchronize_session=False)
+        )
+        if result.rowcount != 1:
+            return False
+        set_committed_value(item, "quantity", item.quantity - amount)
+        return True

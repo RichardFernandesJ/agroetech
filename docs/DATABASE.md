@@ -257,6 +257,12 @@ coletados permanecem como histórico (`collected_at`).
 
 Índice `ix_production_jobs_property_open (property_id, collected_at)`. Migração: `0008_production_jobs`.
 
+### `properties` (regra de unicidade)
+
+`uq_properties_owner (owner_id)` — **uma fazenda por jogador**, garantida no banco (migração
+`0010_one_property_per_user`; substitui o índice comum `ix_properties_owner_id`). A migração
+recusa rodar se já houver jogadores com mais de uma fazenda.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:
@@ -267,8 +273,14 @@ Algumas regras ficam nos services porque dependem do catálogo ou de tempo:
 - transição de `status`;
 - posse da fazenda/plantio (sempre filtrada por `owner_id`).
 
-O banco reforça o que é estrutural: unicidade, FK, quantidade não negativa e
-um plantio ativo por talhão.
+O banco reforça o que é estrutural: unicidade, FK, quantidade não negativa, um
+plantio ativo por talhão e uma fazenda por jogador.
+
+**Concorrência.** Saldo e estoque combinam trava de linha (`FOR UPDATE`, no PostgreSQL) com
+**atualização condicional**: `UPDATE wallets SET balance = :novo WHERE id = :id AND balance = :lido`
+e `UPDATE inventory_items SET quantity = quantity - :n WHERE id = :id AND quantity >= :n`. Se outra
+operação mudou o valor no meio, nada é gravado (409 ou 422), mesmo em bancos sem trava de linha.
+Violações de unicidade causadas por corridas viram `409 conflict` (nunca 500).
 
 ## 5. Migrações
 

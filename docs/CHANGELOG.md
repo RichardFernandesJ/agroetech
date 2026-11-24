@@ -11,6 +11,24 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.11.0] — 2026-11-23
+
+### Adicionado
+
+- **Preparação para validar em Docker/PostgreSQL:**
+  - `tests/conftest.py` roda a mesma suíte em PostgreSQL real via `AGRO_TEST_DATABASE_URL` (o banco precisa terminar em `_test`; cria o banco se faltar e recusa qualquer outro).
+  - `tests/test_postgres.py` (10 testes, pulados em SQLite): migrações reais com paridade de tabelas/colunas/índices/únicos/checks e `downgrade` até a base, e requisições concorrentes de compra, melhoria, fabricação, colheita, coleta, primeiro acesso, cadastro e criação de fazenda.
+  - Serviço `tests-pg` no Compose; `scripts/smoke.py` (roteiro de fumaça com compras simultâneas); `.github/workflows/ci.yml` (SQLite, PostgreSQL, frontend/E2E e stack Docker); `docs/VALIDATION.md` (roteiro e checklist manual).
+  - `tests/test_deploy_config.py`: verificação estática do Compose, Dockerfiles, nginx e `.env.example`.
+- Teste de migração agora compara também índices, restrições únicas e de checagem (não só colunas).
+
+### Corrigido
+
+- **Duplo gasto sem trava de linha:** com SQLite, duas compras simultâneas passavam com saldo para uma e o extrato divergia do saldo. Saldo e estoque agora usam atualização condicional (compare-and-swap) além do `FOR UPDATE` do PostgreSQL.
+- Cadastro simultâneo com o mesmo e-mail e outras corridas de unicidade retornavam 500; agora retornam **409**.
+- Criação simultânea do primeiro preset de talentos podia falhar; agora é segura.
+- **Uma fazenda por jogador** passa a ser garantida no banco (`uq_properties_owner`, migração `0010`), e não só no serviço.
+
 ## [0.10.0] — 2026-11-23
 
 ### Adicionado

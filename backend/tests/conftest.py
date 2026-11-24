@@ -1,15 +1,27 @@
 """Fixtures compartilhadas dos testes.
 
-Os testes usam SQLite em memória (com StaticPool para compartilhar a mesma
-conexão) e substituem a dependência ``get_db``. Assim a suíte roda sem Docker,
-enquanto produção usa PostgreSQL.
+Por padrão os testes usam SQLite em memória (com StaticPool para compartilhar a
+mesma conexão) e substituem a dependência ``get_db``. Assim a suíte roda sem
+Docker, enquanto produção usa PostgreSQL.
+
+Para rodar a **mesma suíte em PostgreSQL real** (valida travas ``FOR UPDATE``,
+índices parciais, JSON e concorrência de verdade), defina:
+
+    AGRO_TEST_DATABASE_URL=postgresql+asyncpg://agro:agro@localhost:5432/agroetech_test
+
+O nome do banco precisa terminar em ``_test``: o esquema é apagado e recriado a
+cada teste, e esta trava impede que isso aconteça num banco de desenvolvimento.
+O banco de teste é criado automaticamente se ainda não existir.
 """
 
+import os
 from collections.abc import AsyncIterator
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -23,18 +35,49 @@ from app.core.database import get_db
 from app.main import app
 from app.models.base import Base
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+TEST_DATABASE_URL = os.environ.get("AGRO_TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+IS_POSTGRES = TEST_DATABASE_URL.startswith("postgresql")
+
+
+async def _ensure_postgres_database(url: str) -> None:
+    """Cria o banco de teste se ele não existir (e recusa bancos que não sejam de teste)."""
+    parsed = make_url(url)
+    name = parsed.database or ""
+    if not name.endswith("_test"):
+        pytest.exit(
+            f"AGRO_TEST_DATABASE_URL aponta para «{name}»: o nome precisa terminar em _test "
+            "porque a suíte apaga e recria as tabelas.",
+            returncode=2,
+        )
+    admin = create_async_engine(parsed.set(database="postgres"), isolation_level="AUTOCOMMIT")
+    try:
+        async with admin.connect() as connection:
+            exists = await connection.scalar(
+                text("select 1 from pg_database where datname = :name"), {"name": name}
+            )
+            if not exists:
+                await connection.execute(text(f'create database "{name}"'))
+    finally:
+        await admin.dispose()
 
 
 @pytest_asyncio.fixture
 async def engine() -> AsyncIterator[AsyncEngine]:
-    test_engine = create_async_engine(
-        TEST_DATABASE_URL,
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    async with test_engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
+    if IS_POSTGRES:
+        await _ensure_postgres_database(TEST_DATABASE_URL)
+        # Conexões independentes: permite testar requisições realmente concorrentes.
+        test_engine = create_async_engine(TEST_DATABASE_URL, pool_size=20, max_overflow=0)
+        async with test_engine.begin() as connection:
+            await connection.run_sync(Base.metadata.drop_all)
+            await connection.run_sync(Base.metadata.create_all)
+    else:
+        test_engine = create_async_engine(
+            TEST_DATABASE_URL,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+        async with test_engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
     yield test_engine
     await test_engine.dispose()
 

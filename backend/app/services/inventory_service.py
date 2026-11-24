@@ -35,6 +35,7 @@ class InventoryService:
         if item is None or item.quantity < quantity:
             raise GameRuleError(f"Quantidade insuficiente de {label} no inventário.")
 
-        item.quantity -= quantity
-        await self.session.flush()
+        # Débito atômico: se outra operação gastou o estoque entre a leitura e aqui, falha.
+        if not await self.inventory.try_decrement(item, quantity):
+            raise GameRuleError(f"Quantidade insuficiente de {label} no inventário.")
         return item

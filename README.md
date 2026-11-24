@@ -2,7 +2,7 @@
 
 Simulador de fazenda na ilha para navegador em pixel art ("God-view"). Monorepo com **API FastAPI/PostgreSQL** e **cliente Phaser 3/TypeScript**.
 
-> **Status:** Fases 1 (Fundação), 2 (Ilha & Câmera Livre) e 3 (Agricultura Point & Click) concluídas. O jogador gerencia sua ilha de cima sem controlar um avatar para trabalhar: navega livremente com o mouse (pan e zoom dinâmico), planta sementes clicando nos talhões, acompanha o crescimento em tempo real e colhe safras manualmente ou em lote, com produção offline persistida no backend. A próxima fase é a Economia básica (AgroCoin) e comércio de safras.
+> **Status:** MVP completo e Fase 5 (produção) avançada. O jogador administra a própria ilha só com o mouse: planta e colhe, vende no mercado com AgroCoin, melhora construções, cria animais, fabrica produtos em estações e evolui numa árvore de talentos com quatro ramos e presets. Tudo é validado no servidor e a produção continua offline. A próxima fase é o multiplayer econômico. Veja `docs/ROADMAP.md` e, para validar na stack real, `docs/VALIDATION.md`.
 
 ## Stack
 
@@ -11,7 +11,7 @@ Simulador de fazenda na ilha para navegador em pixel art ("God-view"). Monorepo 
 | Frontend | Phaser 3.90, TypeScript 5, Vite 8 |
 | Backend | Python 3.12+, FastAPI, SQLAlchemy 2 async, Pydantic v2, PyJWT |
 | Banco | PostgreSQL 16 + Alembic |
-| Testes | Pytest, SQLite em memória, `ruff` |
+| Testes | Pytest (SQLite e PostgreSQL), Playwright, `ruff` |
 | Infra | Docker, Docker Compose, nginx (build de produção) |
 
 ## Estrutura
@@ -193,22 +193,30 @@ As variáveis `VITE_*` estão documentadas em `frontend/.env.example`.
 ## Testes e qualidade
 
 ```bash
-# Backend: 43 testes (API, regras puras e migrações)
+# Backend (SQLite em memória, rápido): API, regras puras, migrações e integridade
 cd backend
 pytest
 ruff check .
 
-# Frontend: typecheck + build
+# Frontend: tipos, build e E2E (sobe a API em SQLite e o Vite sozinho)
 cd frontend
 npm run typecheck
 npm run build
+npm run test:e2e
 ```
 
-Via Docker, sem instalar Python/Node:
+Contra **PostgreSQL real** (travas de linha, migrações e requisições concorrentes de verdade):
 
 ```bash
-docker compose --profile test run --rm tests
+docker compose --profile test run --rm tests-pg
+# ou, com um PostgreSQL local (o banco precisa terminar em _test):
+AGRO_TEST_DATABASE_URL=postgresql+asyncpg://agro:agro@localhost:5432/agroetech_test pytest -v
 ```
+
+Com a stack no ar (`docker compose up`), o roteiro de fumaça percorre o ciclo principal e dispara
+compras simultâneas: `python scripts/smoke.py`. O passo a passo completo, com o checklist manual
+no navegador, está em [`docs/VALIDATION.md`](docs/VALIDATION.md). O CI (`.github/workflows/ci.yml`)
+roda tudo isso, inclusive em PostgreSQL, a cada `push`.
 
 ## API
 

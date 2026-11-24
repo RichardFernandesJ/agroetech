@@ -313,3 +313,25 @@ dos animais. O ADR-017 deixou em aberto como evitar efeito retroativo ao trocar 
 **Consequências:** Novos ramos (Exploração, Estratégia) só precisam declarar efeitos e, se
 tiverem produção contínua, seguir o mesmo padrão de gravar o bônus no início. O simulador
 precisa ganhar um domínio novo a cada mecânica econômica nova.
+
+## ADR-020 — Concorrência: trava de linha e atualização condicional
+
+**Contexto:** O desenvolvimento rodou em SQLite, que não tem `SELECT ... FOR UPDATE`. Ao disparar
+dez compras simultâneas contra a API, duas passaram com saldo para uma e o extrato divergiu do
+saldo (duplo gasto). Em produção o PostgreSQL trava a linha, mas depender só disso é frágil:
+um índice faltando ou uma consulta fora da trava reabre a brecha.
+
+**Decisão:**
+1. Duas linhas de defesa independentes: trava de linha (`FOR UPDATE`) no PostgreSQL **e**
+   atualização condicional no SQL (`WHERE balance = :lido`, `WHERE quantity >= :n`) para saldo e
+   estoque. Quem perde a corrida recebe 409/422 e nada é gravado.
+2. Violação de unicidade por corrida (cadastro, fazenda, primeiro acesso) é tratada como `409`,
+   nunca como `500`; criações "se não existir" usam savepoint.
+3. Regras de unicidade do domínio (uma fazenda por jogador) vivem também no banco.
+4. A mesma suíte roda em PostgreSQL (`AGRO_TEST_DATABASE_URL`) e há testes só de PostgreSQL com
+   requisições realmente concorrentes. O CI executa ambos.
+
+**Consequências:** Um cliente pode receber 409 "tente novamente" em disputas reais; a interface
+já trata erros de API com mensagem amigável. Novos recursos que mexem em dinheiro ou itens
+devem usar `WalletService.apply` e `InventoryService.consume/add` (já atômicos) e ganhar um
+caso de concorrência em `tests/test_postgres.py`.

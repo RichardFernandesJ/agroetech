@@ -3,7 +3,7 @@
 import uuid
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.wallet import Wallet, WalletLedgerEntry
@@ -27,6 +27,20 @@ class WalletRepository(BaseRepository[Wallet]):
             # Serializa operações concorrentes sobre o mesmo saldo (PostgreSQL).
             stmt = stmt.with_for_update()
         return await self.session.scalar(stmt)
+
+    async def compare_and_set_balance(self, wallet: Wallet, new_balance: int) -> bool:
+        """Troca o saldo só se ele ainda for o que lemos (``UPDATE ... WHERE balance = :antigo``).
+
+        Segunda linha de defesa, independente do banco: mesmo sem trava de linha (SQLite),
+        duas operações simultâneas sobre o mesmo saldo não passam as duas.
+        """
+        result = await self.session.execute(
+            update(Wallet)
+            .where(Wallet.id == wallet.id, Wallet.balance == wallet.balance)
+            .values(balance=new_balance)
+            .execution_options(synchronize_session=False)
+        )
+        return result.rowcount == 1
 
     async def add_entry(self, entry: WalletLedgerEntry) -> WalletLedgerEntry:
         self.session.add(entry)

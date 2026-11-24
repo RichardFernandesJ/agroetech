@@ -74,5 +74,20 @@ services:
       - ./backend:/app
     command: sh -c "pip install -r requirements-dev.txt && pytest"
 
+  # Mesma suíte, mas contra o PostgreSQL do Compose (travas FOR UPDATE, migrações e
+  # requisições concorrentes de verdade). Usa o banco separado `agroetech_test`.
+  tests-pg:
+    build:
+      context: ./backend
+    profiles: ["test"]
+    environment:
+      AGRO_TEST_DATABASE_URL: "postgresql+asyncpg://${POSTGRES_USER:-agro}:${POSTGRES_PASSWORD:-agro}@db:5432/agroetech_test"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: sh -c "pip install -r requirements-dev.txt && pytest -v"
+
 volumes:
   pgdata:
