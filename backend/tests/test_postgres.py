@@ -291,3 +291,109 @@ async def test_concurrent_harvest_and_collect_pay_out_once(
     )
     assert _statuses(collects).count(200) == 1
     assert (await inventory_quantities(client, property_id, auth_headers))["animal_ovo"] == 8
+
+
+# ------------------------------------------------- mercado entre jogadores
+async def test_concurrent_purchases_never_oversell_a_listing(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    from tests.test_exchange import _buy, _give, _list, _second_player
+
+    bia = await _second_player(client, session_factory)
+    await boost_player(client, bia.headers, session_factory, level=5)
+    await boost_player(client, auth_headers, session_factory, level=5, agc=1000)
+    await _give(session_factory, bia.property_id, "crop_milho", 10)
+    listing_id = (await _list(client, bia.headers, quantity=10, price=6)).json()["id"]
+
+    responses = await asyncio.gather(*[_buy(client, auth_headers, listing_id, 3) for _ in range(8)])
+    assert _statuses(responses).count(200) == 3  # 9 de 10 unidades; a 4ª compra de 3 não cabe
+    assert (await inventory_quantities(client, property_id, auth_headers))["crop_milho"] == 9
+    listing = (await client.get("/api/v1/exchange/listings/mine", headers=bia.headers)).json()[0]
+    assert (listing["quantity_remaining"], listing["status"]) == (1, "active")
+    # 3 compras x (3 x 6) = 54 AGC pagos pelo comprador (a taxa é cobrada do vendedor).
+    assert await _balance_of(client, auth_headers) == 1100 - 54
+
+
+async def _balance_of(client: AsyncClient, headers: Headers) -> int:
+    return (await client.get("/api/v1/wallet", headers=headers)).json()["balance"]
+
+
+async def test_crossing_purchases_between_two_players_do_not_deadlock(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    """A compra de B ao mesmo tempo que B compra de A: carteiras travadas em ordem fixa."""
+    from tests.test_exchange import _buy, _give, _list, _second_player
+
+    bia = await _second_player(client, session_factory)
+    for headers in (auth_headers, bia.headers):
+        await boost_player(client, headers, session_factory, level=5, agc=1000)
+    await _give(session_factory, property_id, "crop_milho", 30)
+    await _give(session_factory, bia.property_id, "animal_ovo", 30)
+    mine = [
+        (await _list(client, auth_headers, item="crop_milho", quantity=1, price=6)).json()["id"]
+        for _ in range(8)
+    ]
+    hers = [
+        (await _list(client, bia.headers, item="animal_ovo", quantity=1, price=6)).json()["id"]
+        for _ in range(8)
+    ]
+    responses = await asyncio.wait_for(
+        asyncio.gather(
+            *[_buy(client, bia.headers, listing_id, 1) for listing_id in mine],
+            *[_buy(client, auth_headers, listing_id, 1) for listing_id in hers],
+        ),
+        timeout=60,
+    )
+    assert set(_statuses(responses)) == {200}
+
+
+async def test_concurrent_listing_creation_respects_the_active_limit(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    from app.game.exchange import MAX_ACTIVE_LISTINGS
+    from tests.test_exchange import _give, _list
+
+    await boost_player(client, auth_headers, session_factory, level=5)
+    await _give(session_factory, property_id, "crop_milho", 60)
+    responses = await asyncio.gather(
+        *[_list(client, auth_headers, quantity=1) for _ in range(MAX_ACTIVE_LISTINGS + 10)]
+    )
+    assert _statuses(responses).count(201) == MAX_ACTIVE_LISTINGS
+    assert (await inventory_quantities(client, property_id, auth_headers))["crop_milho"] == (
+        60 - MAX_ACTIVE_LISTINGS
+    )
+
+
+async def test_cancel_and_purchase_race_never_does_both(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    from tests.test_exchange import _buy, _give, _list, _second_player
+
+    bia = await _second_player(client, session_factory)
+    await boost_player(client, bia.headers, session_factory, level=5)
+    await boost_player(client, auth_headers, session_factory, level=5, agc=1000)
+    await _give(session_factory, bia.property_id, "crop_milho", 10)
+    listing_id = (await _list(client, bia.headers, quantity=10, price=6)).json()["id"]
+
+    buy, cancel = await asyncio.gather(
+        _buy(client, auth_headers, listing_id, 10),
+        client.delete(f"/api/v1/exchange/listings/{listing_id}", headers=bia.headers),
+    )
+    assert sorted([buy.status_code == 200, cancel.status_code == 200]) == [False, True]
+    bought = (await inventory_quantities(client, property_id, auth_headers)).get("crop_milho", 0)
+    returned = (await inventory_quantities(client, bia.property_id, bia.headers)).get(
+        "crop_milho", 0
+    )
+    assert bought + returned == 10 and (bought, returned) in {(10, 0), (0, 10)}

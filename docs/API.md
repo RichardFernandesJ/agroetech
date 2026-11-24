@@ -489,6 +489,55 @@ Aceita `Idempotency-Key`: o reenvio não inicia outro trabalho (`replayed: true`
 Coleta todos os trabalhos prontos para o inventário e concede XP (`collected`,
 `xp_gained`). `422` se nada estiver pronto. Cada trabalho só pode ser coletado uma vez.
 
+### Mercado entre jogadores (Fase 6)
+
+A **Praça** permite que jogadores negociem sementes e produtos entre si. Regras (em
+`backend/app/game/exchange.py`):
+
+- **Nível mínimo 3** para anunciar e comprar; no máximo **20 anúncios ativos**; **48 h** de validade.
+- **Custódia:** ao anunciar, os itens saem do inventário e ficam no anúncio; voltam ao vendedor se
+  o anúncio for cancelado ou expirar (a devolução dos vencidos acontece sob demanda, quando
+  qualquer jogador navega pela praça ou o dono abre os próprios anúncios).
+- **Faixa de preço (anti-inflação):** de **50% a 300%** do valor de referência do entreposto NPC
+  (por exemplo, milho: 3 a 15 AGC; referência 5).
+- **Taxa:** paga pelo **vendedor**, a mesma do entreposto (5%, reduzida pelos talentos de
+  Comércio do vendedor), **arredondada para cima com mínimo de 1 AGC por compra** para que ninguém
+  fatie uma venda em compras minúsculas e fuja dela. A taxa sai da economia.
+- Compra **parcial ou total**; não se compra o próprio anúncio.
+
+#### GET `/api/v1/exchange/info` 🔒
+
+Regras, a taxa efetiva do jogador e, por item negociável, `minimum`/`reference`/`maximum`,
+`last_price` (média das últimas vendas) e `lowest_listing`.
+
+#### GET `/api/v1/exchange/listings?item_id=&sort=price|new&limit=&offset=` 🔒
+
+Anúncios ativos e não vencidos, com `seller_name`, `is_mine` e `quantity_remaining`.
+
+#### GET `/api/v1/exchange/listings/mine` 🔒
+
+Seus anúncios recentes (ativos, vendidos, cancelados e expirados).
+
+#### POST `/api/v1/exchange/listings` 🔒 · `{ "item_id": "crop_milho", "quantity": 10, "unit_price": 6 }`
+
+Cria o anúncio e debita o estoque de forma atômica. `422` para item não negociável, preço fora da
+faixa, nível, estoque ou limite de anúncios. Aceita `Idempotency-Key`.
+
+#### POST `/api/v1/exchange/listings/{id}/buy` 🔒 · `{ "quantity": 5 }`
+
+Debita o comprador, credita o vendedor (bruto − taxa), entrega os itens e grava a transação, tudo
+na mesma transação. Ledger: `p2p_purchase` (comprador) e `p2p_sale` (vendedor, com a taxa).
+Aceita `Idempotency-Key` (`replayed: true` no reenvio; `409` se a chave for de outra compra).
+`422` para saldo insuficiente, anúncio indisponível ou quantidade acima do restante.
+
+#### DELETE `/api/v1/exchange/listings/{id}` 🔒
+
+O vendedor cancela e recebe de volta o que sobrou (`404` para quem não é o dono).
+
+#### GET `/api/v1/exchange/history?limit=&offset=` 🔒
+
+Histórico comercial do jogador (compras e vendas) com a contraparte e o efeito no saldo.
+
 ## 7. Infra
 
 | Método | Rota | Descrição |

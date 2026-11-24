@@ -23,6 +23,8 @@ const KIND_LABELS: Record<string, string> = {
   seed_purchase: "Compra de sementes",
   crop_sale: "Venda de safra",
   talent_respec: "Redefinição de talentos",
+  p2p_purchase: "Compra na Praça",
+  p2p_sale: "Venda na Praça",
 };
 
 function escapeHtml(value: string): string {

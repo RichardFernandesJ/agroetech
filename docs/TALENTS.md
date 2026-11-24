@@ -200,6 +200,7 @@ confrontos repetidos; nível mínimo 10 para disputas; bônus de reconstrução.
   Fábrica Lendária.
 - **Híbridos:** *Laticínios* (Pecuária + Indústria: leite, queijo e manteiga +8% no preço) e
   *Feira de Produtos* (Comércio + Pecuária: ovos, leite e lã +8%). Exigem 6 pontos em cada ramo.
+- **Mercado entre jogadores:** `market_fee` (Comércio) reduz a taxa que o **vendedor** paga na Praça, com o mesmo piso de 1%; os bônus de preço por produto valem só no entreposto NPC (na Praça o preço é do próprio jogador, dentro da faixa).
 - **Sem efeito retroativo:** o plantio, a fabricação e agora o animal gravam os bônus ao
   começar (o animal, ao ser alimentado com fome). Trocar de build só afeta o que vier depois.
 - **Paridade (simulador):** como animais e fabricação têm margem fina, qualquer bônus

@@ -187,6 +187,17 @@ como o gestor supremo da fazenda:
 - Insumos saem do inventário ao iniciar. Os produtos processados vendem no mercado e dão XP.
 - Interface: botão **🏭 Fabricação** ou clique na **Oficina** do mapa; botões ×1, ×5 e Máx.
 
+## 6.4 Praça dos Jogadores (mercado entre jogadores)
+
+- Os jogadores anunciam sementes e produtos (inclusive animais e processados) e compram uns dos
+  outros. Os itens anunciados ficam em **custódia** até vender, cancelar ou vencer (48 h).
+- O preço é livre dentro de uma **faixa de 50% a 300%** do valor do entreposto, o que impede
+  transferir riqueza entre contas vendendo "por nada" e a inflação de preços.
+- O vendedor paga a **taxa** (5%, menor com talentos de Comércio); ela **sai da economia**.
+- Nível 3 para participar, até 20 anúncios ativos, compra parcial, histórico comercial e cotações
+  (última venda e menor anúncio) em cada item.
+- Interface: botão **🤝 Praça**; quantidade e preço por botões (±, Mín, Referência, Máx, Mais barato).
+
 ## 7. Progressão
 
 **Implementado:** XP e nível (1 a 50) por jogador. Plantar rende 2 XP; colher rende

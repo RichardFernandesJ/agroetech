@@ -125,6 +125,8 @@ def run(base: str, skip_concurrency: bool) -> None:
         ("talentos", "/api/v1/talents"),
         ("catálogo de talentos", "/api/v1/catalog/talents"),
         ("ofertas do mercado", "/api/v1/market/offers"),
+        ("praça: regras e cotações", "/api/v1/exchange/info"),
+        ("praça: anúncios", "/api/v1/exchange/listings"),
     ]:
         status, body = api.call("GET", path)
         check(name, status == 200, (status, body))

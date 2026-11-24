@@ -23,7 +23,7 @@ docker compose up --build
 O que deve acontecer, em ordem:
 
 1. `db` fica saudável (`pg_isready`).
-2. `api` roda `alembic upgrade head` — nos logs, as 10 revisões até `0010_one_property_per_user`.
+2. `api` roda `alembic upgrade head` — nos logs, as 11 revisões até `0011_exchange`.
 3. `api` fica saudável (`/health`) e `web` sobe o Vite.
 
 Conferir:
@@ -41,7 +41,7 @@ Abra `http://localhost:8000/docs` (Swagger) e `http://localhost:5173` (jogo).
 python scripts/smoke.py            # contra http://localhost:8000
 ```
 
-Esperado: **20 verificações ok, 0 falhas**, inclusive:
+Esperado: **22 verificações ok, 0 falhas**, inclusive:
 
 - uma fazenda por jogador (segunda criação recusada com 409);
 - compra idempotente (a mesma chave não cobra duas vezes);
@@ -59,7 +59,7 @@ A mesma suíte (inclui `tests/test_postgres.py`, que em SQLite fica "pulado"):
 docker compose --profile test run --rm tests-pg
 ```
 
-Esperado: todos os testes passam e **nenhum "skipped"**. O que `test_postgres.py` cobre:
+Esperado: todos os testes passam e **nenhum "skipped"** (209 no total). O que `test_postgres.py` cobre:
 
 | Teste | O que prova |
 |---|---|
@@ -72,6 +72,10 @@ Esperado: todos os testes passam e **nenhum "skipped"**. O que `test_postgres.py
 | melhorias simultâneas | cobra uma vez |
 | fabricação simultânea | nunca passa do número de vagas |
 | colheita/coleta simultâneas | pagam uma vez |
+| compras simultâneas de um anúncio | nunca vendem mais do que existe |
+| compras cruzadas A↔B | não geram deadlock |
+| criação simultânea de anúncios | respeita o limite de 20 |
+| cancelar × comprar | só um dos dois vale; itens conservados |
 
 Sem Docker, dá para rodar com um PostgreSQL local:
 
@@ -86,7 +90,7 @@ aborta antes de tocar em qualquer outro banco.
 ## 5. Migrações e backup
 
 ```bash
-docker compose exec api alembic current          # 0010_one_property_per_user (head)
+docker compose exec api alembic current          # 0011_exchange (head)
 docker compose exec api alembic history --verbose
 docker compose exec api alembic downgrade -1 && docker compose exec api alembic upgrade head
 
@@ -116,6 +120,7 @@ Marque cada item; "esperado" é o que deve aparecer.
 - [ ] **🏗️ Construções** → melhorar o Poço (nível de jogador 2) → o próximo plantio fica 2% mais rápido; melhorar a Casa abre 2 talhões novos no mapa.
 - [ ] **🐔 Animais** (ou clicar no Curral) → construir Galinheiro, comprar uma galinha, alimentar com milho → "Alimentada por…" → depois de alguns minutos há ovos → **Coletar tudo**.
 - [ ] **🏭 Fabricação** (ou clicar na Oficina) → construir o Moinho → produzir farinha → barra de progresso → **Coletar prontos**.
+- [ ] **🤝 Praça** (use duas contas, em dois navegadores/janelas anônimas) → a conta A anuncia 10 milhos a 6 AGC; a B compra 5 → saldo de B −30, saldo de A +28 (taxa de 2 AGC), 5 milhos para B; o histórico das duas mostra a negociação; A cancela o resto e os 5 milhos voltam.
 - [ ] **🌳 Talentos** → o mapa mostra 4 ramos ativos; adquirir um talento, criar um segundo preset, trocar de preset (recarga de 1 h), redefinir (1ª grátis).
 - [ ] Clicar num botão de painel que fica sobre um talhão **não** abre o seletor de plantio.
 
@@ -128,8 +133,9 @@ Marque cada item; "esperado" é o que deve aparecer.
 
 **Validado sem Docker** (SQLite e API local):
 
-- 179 testes automatizados (API, regras puras, migrações, integridade) e 6 E2E com Playwright; mais
-  10 testes exclusivos de PostgreSQL que ficam "pulados" em SQLite.
+- 195 testes automatizados (API, regras puras, migrações, integridade, mercado entre jogadores) e 7
+  E2E com Playwright (um deles com dois jogadores); mais 14 testes exclusivos de PostgreSQL que
+  ficam "pulados" em SQLite.
 - Paridade entre migrações e models (colunas, índices, únicos e checks).
 - Roteiro de fumaça 20/20 contra a API local, **inclusive a disputa concorrente** (que revelou o
   duplo gasto em SQLite e levou à atualização condicional, ver ADR-020).

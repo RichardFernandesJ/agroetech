@@ -11,6 +11,17 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.12.0] — 2026-11-23
+
+### Adicionado
+
+- **Fase 6 — Mercado entre jogadores (Praça):** tabelas `market_listings` e `market_transactions` (migração `0011`), `ExchangeService` e rotas `/exchange` (info, anúncios, meus anúncios, criar, comprar, cancelar e histórico).
+- Custódia dos itens, compra parcial, expiração sob demanda, cancelamento, idempotência (anúncio e compra) e histórico comercial com cotações.
+- Faixa de preço de 50% a 300% do valor de referência e taxa do vendedor arredondada para cima (mínimo de 1 AGC), reduzida pelos talentos de Comércio.
+- Painel **🤝 Praça** com abas Comprar, Anunciar, Meus anúncios e Histórico, tudo por cliques (±, Mín, Referência, Máx, Mais barato).
+- 16 testes de API do mercado, 4 testes de concorrência em PostgreSQL (compradores simultâneos, cruzamento A↔B sem deadlock, limite de anúncios, cancelar × comprar) e E2E com dois jogadores reais (195 testes ativos + 14 só de PostgreSQL).
+- O roteiro de fumaça passou a checar a Praça.
+
 ## [0.11.0] — 2026-11-23
 
 ### Adicionado

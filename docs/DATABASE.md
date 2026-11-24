@@ -263,6 +263,34 @@ coletados permanecem como histórico (`collected_at`).
 `0010_one_property_per_user`; substitui o índice comum `ix_properties_owner_id`). A migração
 recusa rodar se já houver jogadores com mais de uma fazenda.
 
+### `market_listings`
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `seller_id` / `seller_property_id` | UUID | FKs, CASCADE (a fazenda recebe a devolução) |
+| `item_id` | VARCHAR(80) | item negociável |
+| `quantity_initial` / `quantity_remaining` | INTEGER | `0 <= restante <= inicial` |
+| `unit_price` | INTEGER | `>= 1` |
+| `status` | VARCHAR(12) | `active`, `sold`, `cancelled`, `expired` |
+| `expires_at` | TIMESTAMPTZ | validade (48 h) |
+| `request_key` | VARCHAR(64) | idempotência, único por vendedor |
+
+Índices: `ix_market_listings_browse (status, item_id, unit_price)` e `ix_market_listings_seller_status`.
+
+### `market_transactions`
+
+Histórico imutável: uma linha por compra (inclusive parcial).
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `listing_id` / `buyer_id` / `seller_id` | UUID | FKs, CASCADE |
+| `item_id`, `quantity`, `unit_price` | — | `quantity >= 1` |
+| `gross` / `fee` / `seller_net` | BIGINT | `bruto = taxa + líquido` |
+| `request_key` | VARCHAR(64) | idempotência, único por comprador |
+
+Índices por comprador, vendedor (com `created_at`) e item. Migração: `0011_exchange`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:

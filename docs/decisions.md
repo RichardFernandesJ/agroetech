@@ -335,3 +335,29 @@ um índice faltando ou uma consulta fora da trava reabre a brecha.
 já trata erros de API com mensagem amigável. Novos recursos que mexem em dinheiro ou itens
 devem usar `WalletService.apply` e `InventoryService.consume/add` (já atômicos) e ganhar um
 caso de concorrência em `tests/test_postgres.py`.
+
+## ADR-021 — Mercado entre jogadores: custódia, faixa de preço e taxa que não se evita
+
+**Contexto:** A Fase 6 abre a economia entre jogadores. O AGENTS.md pede mercado global, taxas,
+controle de inflação, histórico comercial, transações atômicas e proteção contra duplicação.
+
+**Decisão:**
+1. **Custódia (escrow):** os itens saem do inventário ao anunciar (débito atômico) e voltam ao
+   vendedor se o anúncio for cancelado ou vencer. Ninguém vende o que não tem nem vende duas vezes.
+2. **Compra atômica** numa única transação: debita o comprador, credita o vendedor (bruto − taxa),
+   entrega os itens e grava a transação. As duas carteiras são travadas em ordem fixa de usuário
+   (compras cruzadas A↔B não geram deadlock) e o estoque do anúncio só diminui se ainda houver
+   (`WHERE quantity_remaining >= :n`).
+3. **Faixa de preço** (50% a 300% do valor do NPC): sem isso, "vender por 1 AGC" a uma conta
+   parceira transfere itens de graça e preços sem teto inflacionam a economia.
+4. **Taxa do vendedor arredondada para cima, mínimo de 1 AGC por compra:** arredondar para baixo
+   (como no NPC) deixaria compras abaixo de 20 AGC sem taxa, e fatiar uma venda grande em compras
+   pequenas fugiria dela. A taxa sai da economia (sumidouro).
+5. **Expiração sob demanda:** sem processo em segundo plano (AGENTS.md §8), a devolução dos
+   anúncios vencidos acontece quando alguém navega pela praça ou o dono abre os próprios anúncios.
+   Um worker periódico pode substituir isso depois sem mudar o contrato.
+6. **Nível 3, 20 anúncios ativos e 48 h:** proteção a contas novas e contra spam de anúncios; a
+   criação de anúncios é serializada por fazenda para o limite não ser furado em concorrência.
+
+**Consequências:** O padrão (custódia + CAS + ordem de travas) serve às trocas diretas e ao cofre de
+guilda. Fica em aberto: limites diários de volume por conta e detecção de contas parceiras.

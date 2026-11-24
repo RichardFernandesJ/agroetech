@@ -957,3 +957,88 @@
   font-size: 11px;
   white-space: nowrap;
 }
+
+/* ------------------------------------------------------------------ */
+/* Praça dos Jogadores (mercado entre jogadores)                       */
+/* ------------------------------------------------------------------ */
+
+.exchange-panel {
+  width: min(780px, 100%);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  padding: 5px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--cream);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chip small {
+  color: var(--gold);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.chip.active {
+  border-color: var(--gold-strong);
+  background: rgba(217, 185, 106, 0.2);
+}
+
+.listing-row {
+  grid-template-columns: 1fr auto auto;
+}
+
+.listing-row .trade-price small {
+  color: var(--muted);
+}
+
+.listing-hint {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.sell-form {
+  display: grid;
+  gap: 10px;
+}
+
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stepper > span {
+  min-width: 120px;
+}
+
+.stepper strong {
+  min-width: 72px;
+  text-align: center;
+  color: var(--gold-strong);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 16px;
+}
+
+.sell-summary {
+  margin: 4px 0;
+  color: var(--cream);
+  font-size: 14px;
+}
+
+.sell-summary strong {
+  color: var(--gold-strong);
+}

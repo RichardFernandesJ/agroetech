@@ -17,7 +17,7 @@ mas falta escopo da fase.
 | 4 | Economia básica (AgroCoin & Mercado) | 🟡 Em andamento (núcleo pronto) |
 | 4.5 | Progressão e Talentos (XP, árvore, presets) | 🟡 Em andamento (fatias 1 a 3 prontas) |
 | 5 | Produção (animais, construções, fabricação) | 🟡 Em andamento (construções prontas) |
-| 6 | Multiplayer econômico | ⬜ Não iniciada |
+| 6 | Multiplayer econômico | 🟡 Em andamento (mercado entre jogadores pronto) |
 | 7 | Expansão (cidades, regiões, profissões) | ⬜ Não iniciada |
 | 8 | Lançamento | ⬜ Não iniciada |
 
@@ -96,13 +96,16 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 - [x] `ProductionJobs` para processos com duração, vagas por estação e coleta.
 - [x] Ramo Indústria da árvore de talentos (tempo, rendimento e lote grátis por estação).
 
-## Fase 6 — Multiplayer econômico ⬜
+## Fase 6 — Multiplayer econômico 🟡
 
-- [ ] Mercado global e listagens.
-- [ ] Trocas diretas e histórico comercial.
-- [ ] Visitação de fazendas.
-- [ ] Taxas e controle de inflação.
-- [ ] WebSocket/SSE para eventos econômicos.
+- [x] Mercado entre jogadores (Praça): anúncios em custódia, compra parcial/total, expiração, cancelamento.
+- [x] Taxas (do vendedor, arredondadas para cima) e faixa de preço contra a inflação.
+- [x] Histórico comercial e cotações por item (última venda e menor anúncio).
+- [x] Concorrência: carteiras travadas em ordem fixa, estoque do anúncio decrementado de forma condicional, limite de anúncios serializado.
+- [ ] Trocas diretas entre dois jogadores (`TradeOffers`/`TradeItems`).
+- [ ] Visitação de fazendas (ver a ilha de outro jogador, somente leitura).
+- [ ] Controle de inflação com dados reais (média móvel de preços, alertas) e rate limiting.
+- [ ] WebSocket/SSE para eventos de mercado (hoje a Praça atualiza por consulta a cada 15 s).
 
 ## Fase 7 — Expansão ⬜
 
@@ -155,6 +158,6 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Próxima entrega recomendada
 
-**Executar a validação** de `docs/VALIDATION.md` com Docker (ou deixar o CI rodar no primeiro
-`git push`) e corrigir o que aparecer. Com a stack validada, seguir para o multiplayer econômico
-(Fase 6): mercado global entre jogadores, trocas diretas e visitação de fazendas.
+**Validar** (`docs/VALIDATION.md`, ou o CI do GitHub) e então continuar a Fase 6: **trocas diretas**
+entre dois jogadores (oferta com itens e AGC dos dois lados, aceitação atômica) e **visitação de
+fazendas**. Depois, guildas (cofre e missões coletivas) sobre o mesmo padrão de carteira e ledger.

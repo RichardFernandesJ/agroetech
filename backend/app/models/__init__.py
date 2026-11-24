@@ -4,6 +4,7 @@ from app.models.animal import Animal
 from app.models.base import Base
 from app.models.building import Building
 from app.models.character import Character
+from app.models.exchange import MarketListing, MarketTransaction
 from app.models.inventory import InventoryItem
 from app.models.planting import Planting
 from app.models.production_job import ProductionJob
@@ -19,6 +20,8 @@ __all__ = [
     "Building",
     "Character",
     "InventoryItem",
+    "MarketListing",
+    "MarketTransaction",
     "Planting",
     "PresetNode",
     "ProductionJob",

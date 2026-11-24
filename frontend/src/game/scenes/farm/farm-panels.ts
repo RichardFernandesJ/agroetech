@@ -5,6 +5,7 @@ import { session } from "@/state/session";
 import { AnimalsModal } from "@/ui/animals-modal";
 import { BuildingsModal } from "@/ui/buildings-modal";
 import { CraftingModal } from "@/ui/crafting-modal";
+import { ExchangeModal } from "@/ui/exchange-modal";
 import { HouseModal } from "@/ui/house-modal";
 import type { Hud, HudMenuItem } from "@/ui/hud";
 import { MarketModal } from "@/ui/market-modal";
@@ -57,6 +58,12 @@ export class FarmPanels {
         label: "🏭 Fabricação",
         title: "Transformar safras e produtos em itens de maior valor",
         onClick: () => this.openCrafting(),
+      },
+      {
+        id: "exchange",
+        label: "🤝 Praça",
+        title: "Comprar e vender itens com outros jogadores",
+        onClick: () => this.openExchange(),
       },
       {
         id: "talents",
@@ -200,6 +207,28 @@ export class FarmPanels {
             void controller.refreshProgress(true);
           },
           onOpenBuildings: () => this.openBuildings(),
+          onClose: close,
+        }),
+    );
+  }
+
+  openExchange(): void {
+    const { state, controller } = this.deps;
+    if (!state.property || !state.token) {
+      return;
+    }
+
+    const propertyId = state.property.id;
+    const token = state.token;
+    this.modals.open(
+      (close) =>
+        new ExchangeModal({
+          propertyId,
+          token,
+          onChange: () => {
+            void controller.refreshInventory();
+            void controller.refreshBalance();
+          },
           onClose: close,
         }),
     );
