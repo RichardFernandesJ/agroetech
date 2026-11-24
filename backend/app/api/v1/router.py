@@ -8,6 +8,7 @@ from app.api.v1.routes import (
     buildings,
     catalog,
     characters,
+    crafting,
     inventory,
     market,
     plantings,
@@ -32,3 +33,4 @@ api_router.include_router(progress.router)
 api_router.include_router(talents.router)
 api_router.include_router(buildings.router)
 api_router.include_router(animals.router)
+api_router.include_router(crafting.router)

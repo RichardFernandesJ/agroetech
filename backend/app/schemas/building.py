@@ -13,6 +13,7 @@ class BuildingLevelRead(BaseModel):
     min_player_level: int
     plots: int | None
     capacity: int | None = None
+    job_slots: int | None = None
     effects: list[EffectRead]
 
 

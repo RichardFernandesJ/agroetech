@@ -2,9 +2,10 @@
 
 Uso: python e2e/support/e2e_db.py <comando> [argumentos]
 
-- boost <xp> <agc>      define o XP do jogador e o saldo da carteira
-- give <item> <qtd>     adiciona itens ao inventário da fazenda
+- boost <xp> <agc>      define o XP e o saldo do jogador mais recente
+- give <item> <qtd>     adiciona itens à fazenda mais recente
 - rewind <horas>        volta o relógio dos animais (simula tempo offline)
+- finish                faz os trabalhos de fabricação em aberto terminarem agora
 """
 
 import sqlite3
@@ -19,15 +20,26 @@ def now() -> str:
     return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S.%f")
 
 
+def latest_owner(connection: sqlite3.Connection) -> str:
+    """Dono da fazenda mais recente: o jogador do teste em andamento."""
+    (owner,) = connection.execute(
+        "select owner_id from properties order by created_at desc limit 1"
+    ).fetchone()
+    return owner
+
+
 def main() -> None:
     command, args = sys.argv[1], sys.argv[2:]
     connection = sqlite3.connect(DB)
     if command == "boost":
-        connection.execute("update player_progress set xp=?", (int(args[0]),))
-        connection.execute("update wallets set balance=?", (int(args[1]),))
+        owner = latest_owner(connection)
+        connection.execute("update player_progress set xp=? where user_id=?", (int(args[0]), owner))
+        connection.execute("update wallets set balance=? where user_id=?", (int(args[1]), owner))
     elif command == "give":
         item, quantity = args[0], int(args[1])
-        (property_id,) = connection.execute("select id from properties limit 1").fetchone()
+        (property_id,) = connection.execute(
+            "select id from properties order by created_at desc limit 1"
+        ).fetchone()
         row = connection.execute(
             "select id from inventory_items where property_id=? and item_id=?", (property_id, item)
         ).fetchone()
@@ -52,6 +64,11 @@ def main() -> None:
             "update animals set last_sync_at=strftime('%Y-%m-%d %H:%M:%f', last_sync_at, ?)"
             " where fed_until is null",
             (modifier,),
+        )
+    elif command == "finish":
+        connection.execute(
+            "update production_jobs set finish_at=strftime('%Y-%m-%d %H:%M:%f', 'now', '-1 seconds')"
+            " where collected_at is null"
         )
     else:
         raise SystemExit(f"comando desconhecido: {command}")

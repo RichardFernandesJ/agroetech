@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from app.game.animals import ANIMALS
 from app.game.catalog import CROPS
+from app.game.recipes import PROCESSED_ITEMS
 
 # Crédito único dado na criação da carteira. Única emissão sem contrapartida.
 INITIAL_GRANT_AGC = 100
@@ -27,6 +28,7 @@ def seed_prices() -> dict[str, int]:
 def product_prices() -> dict[str, int]:
     prices = {crop.product_item: crop.sell_price for crop in CROPS.values()}
     prices.update({animal.product_item: animal.sell_price for animal in ANIMALS.values()})
+    prices.update({item.id: item.sell_price for item in PROCESSED_ITEMS.values()})
     return prices
 
 

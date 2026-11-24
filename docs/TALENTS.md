@@ -35,6 +35,8 @@ correspondente existir; um teste impede talentos para estatísticas não impleme
 | `xp_gain` | XP | +50% |
 | `sell_price` | preço de venda ao entreposto | +45% |
 | `market_fee` | taxa de venda | mínimo 1% |
+| `production_time` | tempo de fabricação (escopo: estação) | −25% |
+| `production_yield` | rendimento da fabricação | +30% |
 
 Regras:
 

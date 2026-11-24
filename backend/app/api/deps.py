@@ -16,6 +16,7 @@ from app.repositories.building_repository import BuildingRepository
 from app.repositories.character_repository import CharacterRepository
 from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.planting_repository import PlantingRepository
+from app.repositories.production_job_repository import ProductionJobRepository
 from app.repositories.progress_repository import ProgressRepository
 from app.repositories.property_repository import PropertyRepository
 from app.repositories.talent_repository import TalentRepository
@@ -25,6 +26,7 @@ from app.services.animal_service import AnimalService
 from app.services.auth_service import AuthService
 from app.services.building_service import BuildingService
 from app.services.character_service import CharacterService
+from app.services.crafting_service import CraftingService
 from app.services.inventory_service import InventoryService
 from app.services.market_service import MarketService
 from app.services.modifier_service import ModifierService
@@ -129,6 +131,23 @@ def get_animal_service(
     )
 
 
+def get_crafting_service(
+    db: DbSession,
+    properties: Annotated[PropertyService, Depends(get_property_service)],
+    inventory: Annotated[InventoryService, Depends(get_inventory_service)],
+    modifiers: Annotated[ModifierService, Depends(get_modifier_service)],
+) -> CraftingService:
+    return CraftingService(
+        ProductionJobRepository(db),
+        BuildingRepository(db),
+        InventoryRepository(db),
+        inventory,
+        properties,
+        ProgressService(db, ProgressRepository(db)),
+        modifiers,
+    )
+
+
 def get_market_service(
     db: DbSession,
     properties: Annotated[PropertyService, Depends(get_property_service)],
@@ -177,3 +196,4 @@ ProgressServiceDep = Annotated[ProgressService, Depends(get_progress_service)]
 TalentServiceDep = Annotated[TalentService, Depends(get_talent_service)]
 BuildingServiceDep = Annotated[BuildingService, Depends(get_building_service)]
 AnimalServiceDep = Annotated[AnimalService, Depends(get_animal_service)]
+CraftingServiceDep = Annotated[CraftingService, Depends(get_crafting_service)]

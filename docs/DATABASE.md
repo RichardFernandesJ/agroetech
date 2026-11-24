@@ -238,6 +238,24 @@ Um animal por linha. A produção é derivada dos timestamps (sem processo por j
 
 Migração: `0007_animals`.
 
+### `production_jobs`
+
+Um trabalho de fabricação por linha (entidade `ProductionJobs` do AGENTS.md). Trabalhos
+coletados permanecem como histórico (`collected_at`).
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `property_id` | UUID | FK `properties.id`, CASCADE, indexado |
+| `recipe_id` / `building_id` | VARCHAR(40) | receita e estação |
+| `batches` | INTEGER | `>= 1` |
+| `output_item` / `output_quantity` | VARCHAR / INTEGER | definidos ao iniciar (`>= 0`) |
+| `started_at` / `finish_at` | TIMESTAMPTZ | término calculado ao iniciar |
+| `collected_at` | TIMESTAMPTZ | nulo enquanto aberto |
+| `request_key` | VARCHAR(64) | idempotência, único por fazenda |
+
+Índice `ix_production_jobs_property_open (property_id, collected_at)`. Migração: `0008_production_jobs`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:

@@ -19,7 +19,7 @@ export interface BuildingsModalOptions {
   onClose: () => void;
 }
 
-const ICONS: Record<string, string> = { sede: "🏡", poco: "💧", galinheiro: "🐔", estabulo: "🐄" };
+const ICONS: Record<string, string> = { sede: "🏡", poco: "💧", galinheiro: "🐔", estabulo: "🐄", moinho: "🌾", padaria: "🍞", queijaria: "🧀" };
 
 /** Lista as construções, o que cada nível entrega e permite melhorar com um clique. */
 export class BuildingsModal {
@@ -101,6 +101,9 @@ export class BuildingsModal {
     }
     if (info.capacity !== null) {
       lines.push(`abriga ${info.capacity} animais`);
+    }
+    if (info.job_slots !== null) {
+      lines.push(`${info.job_slots} vaga(s) de produção`);
     }
     for (const effect of info.effects) {
       lines.push(describeEffect(effect.stat, effect.value_bp, effect.scope));

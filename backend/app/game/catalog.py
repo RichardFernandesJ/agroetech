@@ -9,6 +9,7 @@ consulta deste módulo.
 from dataclasses import dataclass
 
 from app.game.animals import ANIMALS
+from app.game.recipes import PROCESSED_ITEMS
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,6 +141,13 @@ def _build_item_catalog() -> dict[str, ItemDefinition]:
             name=animal.product_name,
             category="product",
             description=animal.product_description,
+        )
+    for processed in PROCESSED_ITEMS.values():
+        catalog[processed.id] = ItemDefinition(
+            id=processed.id,
+            name=processed.name,
+            category="product",
+            description=processed.description,
         )
     return catalog
 

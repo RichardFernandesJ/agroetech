@@ -30,6 +30,8 @@ export const STAT_LABELS: Record<string, string> = {
   xp_gain: "XP ganho",
   sell_price: "Preço de venda",
   market_fee: "Taxa de venda",
+  production_time: "Tempo de fabricação",
+  production_yield: "Rendimento da fabricação",
 };
 
 const CROP_NAMES: Record<string, string> = {

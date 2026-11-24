@@ -44,7 +44,7 @@ def test_initial_migration_matches_models(tmp_path: Path) -> None:
         assert tables == set(Base.metadata.tables) | {"alembic_version"}
 
         revision = connection.execute("select version_num from alembic_version").fetchone()
-        assert revision == ("0007_animals",)
+        assert revision == ("0008_production_jobs",)
 
         for table_name, table in Base.metadata.tables.items():
             columns = {

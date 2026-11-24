@@ -92,8 +92,9 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 - [ ] Animais: porco, cabra e abelha (novas entradas no catálogo) e melhorias de animais.
 - [ ] Ramo Pecuária da árvore de talentos (produção, tempo, ração, qualidade).
 - [ ] Celeiro (armazenamento) e decoração.
-- [ ] Receitas e estações (moinho, padaria, queijaria, engenho, cozinha).
-- [ ] `ProductionJobs` para processos com duração.
+- [x] Receitas e estações: Moinho, Padaria e Queijaria (engenho e cozinha ficam para depois).
+- [x] `ProductionJobs` para processos com duração, vagas por estação e coleta.
+- [ ] Ramo Indústria da árvore de talentos (as estatísticas de fabricação já existem no motor).
 
 ## Fase 6 — Multiplayer econômico ⬜
 
@@ -146,7 +147,7 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Próxima entrega recomendada
 
-**Fase 5, fabricação:** receitas e estações (moinho, padaria, queijaria) com
-`ProductionJobs` de duração, transformando safras e produtos animais (ovos, leite, lã)
-em itens de maior valor, reaproveitando `buildings`, o motor de modificadores e o menu
-do HUD. Em seguida, o ramo Pecuária dos talentos.
+**Ramos Pecuária e Indústria da árvore de talentos:** as mecânicas já existem (animais e
+fabricação), então os dois ramos passam de "em breve" para ativos, com novas estatísticas
+no motor e o simulador de paridade estendido a produção animal e fabricação. Depois, o
+fechamento da Fase 5 (engenho/cozinha, porco/cabra/abelha) e a Fase 6 (multiplayer).

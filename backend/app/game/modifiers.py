@@ -26,6 +26,9 @@ class Stat:
     SELL_PRICE = "sell_price"
     # Pontos-base subtraídos da taxa de venda (negativo = taxa menor).
     MARKET_FEE = "market_fee"
+    # Fabricação: o escopo do tempo é o id da estação (ex.: "moinho").
+    PRODUCTION_TIME = "production_time"
+    PRODUCTION_YIELD = "production_yield"
 
 
 # Intervalo permitido para a soma de bônus de cada estatística (em pontos-base).
@@ -37,6 +40,8 @@ STAT_LIMITS: dict[str, tuple[int, int]] = {
     Stat.XP_GAIN: (0, 5_000),
     Stat.SELL_PRICE: (0, 4_500),
     Stat.MARKET_FEE: (-400, 0),
+    Stat.PRODUCTION_TIME: (-2_500, 0),
+    Stat.PRODUCTION_YIELD: (0, 3_000),
 }
 
 # Estatísticas cuja mecânica já existe no jogo. Talentos só podem usar estas.

@@ -362,6 +362,11 @@ Conteúdo em `backend/app/game/buildings.py`.
 | Estábulo | 1 | 200 | 4 | abriga 2 animais (vacas e ovelhas) |
 | | 2 | 500 | 9 | 4 animais |
 | | 3 | 1100 | 16 | 6 animais |
+| Moinho | 1 | 150 | 3 | 1 vaga de produção |
+| | 2 | 400 | 8 | 2 vagas, produção −5% de tempo |
+| | 3 | 900 | 14 | 3 vagas, −10% |
+| Padaria | 1 / 2 / 3 | 250 / 600 / 1300 | 5 / 10 / 16 | 1 / 2 / 3 vagas, −0% / −5% / −10% |
+| Queijaria | 1 / 2 / 3 | 300 / 700 / 1500 | 6 / 11 / 17 | 1 / 2 / 3 vagas, −0% / −5% / −10% |
 | Poço da Ilha | 1 | 60 | 2 | tempo de crescimento −2% |
 | | 2 | 200 | 6 | −4% |
 | | 3 | 500 | 12 | −6% |
@@ -430,6 +435,41 @@ Consome ração do inventário (`units` de 1 a 64, limitado pelo estoque e pelo 
 
 Coleta todos os produtos prontos para o inventário e concede XP (`xp_gained`, com o
 bônus de talentos). `422` se não houver nada pronto.
+
+### Fabricação (Fase 5)
+
+Receitas rodam em estações (Moinho, Padaria, Queijaria), que são construções com vagas
+de produção. Cada trabalho consome os insumos ao iniciar e entrega o produto após
+`duração × lotes`. O término e a quantidade ficam gravados no trabalho com os bônus
+vigentes no início (determinístico, funciona offline e não muda se trocar de talentos).
+Conteúdo em `backend/app/game/recipes.py`.
+
+| Receita | Estação | Insumos (por lote) | Resultado | Tempo | Nível |
+|---|---|---|---|---:|---:|
+| Farinha de milho | Moinho | 3 milho | 1 farinha (24 AGC) | 10 min | 3 |
+| Pão | Padaria | 2 farinha + 1 ovo | 3 pães (22 AGC) | 15 min | 5 |
+| Bolo | Padaria | 2 farinha + 2 ovos + 1 leite | 1 bolo (90 AGC) | 30 min | 9 |
+| Queijo | Queijaria | 3 leite | 1 queijo (42 AGC) | 20 min | 6 |
+| Manteiga | Queijaria | 2 leite | 1 manteiga (26 AGC) | 10 min | 6 |
+
+Os produtos processados (`processed_*`) vão para o inventário e vendem no mercado.
+
+#### GET `/api/v1/properties/{property_id}/crafting` 🔒
+
+`stations` (nível, `job_slots`, `used_slots`, `time_bonus_bp` e os `jobs` abertos com
+`seconds_left` e `ready`) e `recipes` (insumos com `have`, `max_batches`, `can_craft` e
+`blocked_reason`).
+
+#### POST `/api/v1/properties/{property_id}/crafting/start` 🔒 · `{ "recipe_id": "farinha", "batches": 3 }`
+
+Inicia um trabalho (1 a 24 lotes; o tempo e os insumos são proporcionais aos lotes).
+`422` se faltar estação, nível, vaga ou insumos (nada é consumido nesses casos).
+Aceita `Idempotency-Key`: o reenvio não inicia outro trabalho (`replayed: true`).
+
+#### POST `/api/v1/properties/{property_id}/crafting/collect` 🔒
+
+Coleta todos os trabalhos prontos para o inventário e concede XP (`collected`,
+`xp_gained`). `422` se nada estiver pronto. Cada trabalho só pode ser coletado uma vez.
 
 ## 7. Infra
 

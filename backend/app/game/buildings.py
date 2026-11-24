@@ -20,6 +20,7 @@ class BuildingLevel:
     effects: tuple[Effect, ...] = ()
     plots: int | None = None  # total de talhões da propriedade neste nível
     capacity: int | None = None  # animais abrigados neste nível (abrigos)
+    job_slots: int | None = None  # trabalhos de fabricação simultâneos (estações)
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,6 +104,60 @@ BUILDINGS["estabulo"] = BuildingDefinition(
         BuildingLevel(level=2, cost=500, min_player_level=9, capacity=4),
         BuildingLevel(level=3, cost=1100, min_player_level=16, capacity=6),
     ),
+)
+
+
+def _station(
+    building_id: str,
+    name: str,
+    description: str,
+    costs: tuple[int, int, int],
+    player_levels: tuple[int, int, int],
+) -> BuildingDefinition:
+    """Estação de fabricação: +1 vaga por nível; níveis 2 e 3 também aceleram a produção."""
+    speed = (0, -500, -1000)
+    return BuildingDefinition(
+        id=building_id,
+        name=name,
+        description=description,
+        initial_level=0,
+        levels=tuple(
+            BuildingLevel(
+                level=index + 1,
+                cost=costs[index],
+                min_player_level=player_levels[index],
+                job_slots=index + 1,
+                effects=(
+                    (Effect(Stat.PRODUCTION_TIME, speed[index], building_id),)
+                    if speed[index]
+                    else ()
+                ),
+            )
+            for index in range(3)
+        ),
+    )
+
+
+BUILDINGS["moinho"] = _station(
+    "moinho",
+    "Moinho",
+    "Mói o milho em farinha. Melhorias dão mais vagas e velocidade.",
+    (150, 400, 900),
+    (3, 8, 14),
+)
+BUILDINGS["padaria"] = _station(
+    "padaria",
+    "Padaria",
+    "Assa pães e bolos. Melhorias dão mais vagas e velocidade.",
+    (250, 600, 1300),
+    (5, 10, 16),
+)
+BUILDINGS["queijaria"] = _station(
+    "queijaria",
+    "Queijaria",
+    "Faz queijo e manteiga com o leite. Melhorias dão mais vagas e velocidade.",
+    (300, 700, 1500),
+    (6, 11, 17),
 )
 
 

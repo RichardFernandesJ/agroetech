@@ -9,6 +9,8 @@ export interface BuildingLevel {
   plots: number | null;
   /** Animais abrigados neste nível (galinheiro, estábulo). */
   capacity: number | null;
+  /** Trabalhos de fabricação simultâneos (estações). */
+  job_slots: number | null;
   effects: TalentEffect[];
 }
 

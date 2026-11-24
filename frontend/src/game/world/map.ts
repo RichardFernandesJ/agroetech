@@ -41,6 +41,7 @@ export interface Interactable {
 export const HOUSE: WorldRect = { x: 544, y: 120, width: 192, height: 128 };
 export const POND: WorldRect = { x: 224, y: 576, width: 160, height: 160 };
 export const BARN: WorldRect = { x: 304, y: 236, width: 128, height: 112 };
+export const WORKSHOP: WorldRect = { x: 772, y: 216, width: 112, height: 96 };
 export const MARKET: WorldRect = { x: 928, y: 288, width: 128, height: 96 };
 export const WELL = { x: 384, y: 384 } as const;
 export const BOAT = { x: 1140, y: 380 } as const;
@@ -185,13 +186,11 @@ export const PALM_TREES: TreeSpot[] = [
 export const INLAND_TREES: TreeSpot[] = [
   { x: 450, y: 190 },
   { x: 790, y: 190 },
-  { x: 840, y: 260 },
   { x: 460, y: 520 },
   { x: 420, y: 630 },
   { x: 820, y: 460 },
   { x: 1010, y: 455 },
   { x: 490, y: 310 },
-  { x: 770, y: 320 },
 ];
 
 function intersects(x: number, y: number, rect: WorldRect, padding = 0): boolean {
@@ -214,6 +213,9 @@ export function isDecorBlocked(x: number, y: number): boolean {
   }
 
   if (intersects(x, y, HOUSE, 20) || intersects(x, y, POND, 20)) {
+    return true;
+  }
+  if (intersects(x, y, WORKSHOP, 20)) {
     return true;
   }
   if (intersects(x, y, BARN, 20)) {

@@ -814,3 +814,140 @@
 .animal-card .primary-button {
   margin-top: 10px;
 }
+
+/* ------------------------------------------------------------------ */
+/* Oficina (fabricação)                                                */
+/* ------------------------------------------------------------------ */
+
+.crafting-panel {
+  width: min(760px, 100%);
+}
+
+.stations-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.station-card {
+  padding: 12px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(6, 14, 9, 0.6);
+}
+
+.station-card.unbuilt {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+.station-card h3 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 18px;
+  color: var(--cream);
+}
+
+.station-card .building-head small {
+  color: var(--gold);
+  font-size: 11px;
+}
+
+.job-row {
+  display: grid;
+  grid-template-columns: 1fr 120px auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(217, 185, 106, 0.1);
+  font-size: 13px;
+  color: var(--cream);
+}
+
+.job-row small {
+  color: var(--muted);
+}
+
+.job-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.job-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #7bd88f, #f0c85a);
+  transition: width 0.9s linear;
+}
+
+.job-time {
+  min-width: 56px;
+  color: var(--gold-strong);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  text-align: right;
+}
+
+.recipe-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--panel-border);
+}
+
+.recipe-row strong {
+  color: var(--cream);
+  font-size: 14px;
+}
+
+.recipe-row p {
+  margin: 3px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.recipe-row b {
+  color: var(--gold-strong);
+}
+
+.recipe-row small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.recipe-row small.recipe-meta {
+  display: block;
+}
+
+.recipe-row.blocked strong {
+  opacity: 0.7;
+}
+
+.hud-menu {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: calc(100vw - 280px);
+}
+
+@media (max-width: 640px) {
+  .job-row {
+    grid-template-columns: 1fr auto;
+  }
+  .job-bar {
+    display: none;
+  }
+  .recipe-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hud-menu {
+    max-width: calc(100vw - 24px);
+  }
+}

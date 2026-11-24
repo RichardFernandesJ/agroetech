@@ -16,6 +16,7 @@ import {
   POND,
   TILE_SIZE,
   WELL,
+  WORKSHOP,
   WORLD_HEIGHT,
   WORLD_WIDTH,
   getIslandTile,
@@ -170,6 +171,22 @@ export function buildWorld(scene: Phaser.Scene): WorldBuild {
     gameObject: house,
     x: HOUSE.x + HOUSE.width / 2,
     y: HOUSE.y + HOUSE.height / 2,
+  });
+
+  // Oficina (fabricação)
+  const workshop = scene.add
+    .image(WORKSHOP.x, WORKSHOP.y, "workshop")
+    .setOrigin(0, 0)
+    .setDepth(WORKSHOP.y + WORKSHOP.height)
+    .setInteractive({ useHandCursor: true });
+
+  interactables.push({
+    id: "workshop",
+    label: "Oficina da Ilha",
+    message: "Oficina da Ilha: transforme milho, ovos e leite em farinha, pão, queijo e mais.",
+    gameObject: workshop,
+    x: WORKSHOP.x + WORKSHOP.width / 2,
+    y: WORKSHOP.y + WORKSHOP.height / 2,
   });
 
   // Curral (animais)

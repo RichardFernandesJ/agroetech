@@ -267,3 +267,28 @@ sem processo por jogador, determinística e com limite de capacidade.
 **Consequências:** Novas espécies são linhas no catálogo. Fabricação (Fase 5) poderá usar
 os produtos animais como matéria-prima. Modificar o tempo de produção por talentos exigirá
 decidir se vale no momento da alimentação (como o plantio) para evitar efeito retroativo.
+
+## ADR-018 — Fabricação por trabalhos com resultado fixado ao iniciar
+
+**Contexto:** A Fase 5 pede receitas, estações e `ProductionJobs`, com produção offline
+determinística e proteção contra duplicação.
+
+**Decisão:**
+1. Cada trabalho grava no início `finish_at` e `output_quantity`, já com os bônus
+   vigentes. Assim trocar de talentos depois não altera o que está em andamento (mesma
+   lição do plantio e o contrário do que o animal permite hoje).
+2. Estações são construções do catálogo; as vagas (`job_slots`) e a velocidade vêm do
+   nível. O escopo do efeito de tempo é o id da estação, reaproveitando o `scope` do
+   motor de modificadores (antes só de culturas).
+3. Um trabalho ocupa a vaga até ser coletado, o que evita acumular trabalhos prontos sem
+   limite. Coletar é atômico e marca `collected_at` (nunca coleta duas vezes).
+4. Os insumos são consumidos ao iniciar na mesma transação; se faltar um, nada é gasto.
+   O início aceita `Idempotency-Key` com unicidade `(property_id, request_key)`.
+5. A fazenda é travada (`FOR UPDATE` no PostgreSQL) em início e coleta para que o número
+   de vagas não seja ultrapassado por requisições concorrentes.
+6. Os itens processados entram na tabela de preços do entreposto; a faixa de ganho (1,15×
+   a 2×) é validada por teste.
+
+**Consequências:** O ramo Indústria dos talentos só precisa declarar efeitos em
+`production_time`/`production_yield`. O ganho de valor das receitas é uma nova fonte de
+moeda (limitada por insumos, vagas e tempo) a rever com dados reais antes do multiplayer.

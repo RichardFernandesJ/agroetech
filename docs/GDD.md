@@ -175,6 +175,18 @@ como o gestor supremo da fazenda:
   paga em 10 a 20 horas de produção. Os produtos vendem no entreposto como qualquer safra.
 - Interface: botão **🐔 Animais** ou clique no **Curral** do mapa; alimentar por ×1, ×4 e Máx.
 
+## 6.3 Fabricação
+
+- Três estações (Moinho, Padaria, Queijaria), construídas e melhoradas na tela de
+  Construções. Cada nível dá **mais uma vaga** de produção; os níveis 2 e 3 também
+  aceleram a estação (−5% e −10% de tempo).
+- Receitas transformam safras e produtos animais em itens de maior valor (ganho de 1,2× a
+  1,6× sobre os insumos): farinha → pão e bolo; leite → queijo e manteiga.
+- Um trabalho ocupa uma vaga até ser **coletado** (mesmo depois de pronto), e o jogador
+  escolhe de 1 a 24 lotes de uma vez. Funciona offline: o servidor só compara horários.
+- Insumos saem do inventário ao iniciar. Os produtos processados vendem no mercado e dão XP.
+- Interface: botão **🏭 Fabricação** ou clique na **Oficina** do mapa; botões ×1, ×5 e Máx.
+
 ## 7. Progressão
 
 **Implementado:** XP e nível (1 a 50) por jogador. Plantar rende 2 XP; colher rende

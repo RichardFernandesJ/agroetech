@@ -3,6 +3,7 @@ import { animalService, type Animal, type AnimalsState, type Species } from "@/s
 import { propertyService } from "@/services/property-service";
 
 import { formatDuration } from "./format";
+import { PressGuard } from "./press-guard";
 import { escapeHtml } from "./talents/talent-sidebar";
 
 export interface AnimalsModalOptions {
@@ -29,8 +30,7 @@ export class AnimalsModal {
   private message = "";
   private busy = false;
   private destroyed = false;
-  private pressed = false;
-  private pendingRender = false;
+  private readonly guard: PressGuard;
   private readonly timer: number;
 
   constructor(private readonly options: AnimalsModalOptions) {
@@ -45,11 +45,7 @@ export class AnimalsModal {
       }
     });
 
-    this.root.addEventListener("pointerdown", () => {
-      this.pressed = true;
-    });
-    window.addEventListener("pointerup", this.releasePointer);
-    window.addEventListener("pointercancel", this.releasePointer);
+    this.guard = new PressGuard(this.root, () => this.render());
 
     this.render();
     void this.load();
@@ -60,18 +56,9 @@ export class AnimalsModal {
     }, REFRESH_MS);
   }
 
-  /** Solta o ponteiro e, se houve atualização no meio do clique, desenha depois dele. */
-  private readonly releasePointer = (): void => {
-    this.pressed = false;
-    if (this.pendingRender) {
-      window.setTimeout(() => this.render(), 0);
-    }
-  };
-
   destroy(): void {
     this.destroyed = true;
-    window.removeEventListener("pointerup", this.releasePointer);
-    window.removeEventListener("pointercancel", this.releasePointer);
+    this.guard.dispose();
     window.clearInterval(this.timer);
     this.root.remove();
   }
@@ -187,14 +174,9 @@ export class AnimalsModal {
   }
 
   private render(): void {
-    if (this.destroyed) {
+    if (this.destroyed || this.guard.defer()) {
       return;
     }
-    if (this.pressed) {
-      this.pendingRender = true;
-      return;
-    }
-    this.pendingRender = false;
     const state = this.state;
     const speciesById = new Map((state?.species ?? []).map((s) => [s.id, s]));
     const readyTotal = state?.animals.reduce((sum, a) => sum + a.stored, 0) ?? 0;

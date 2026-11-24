@@ -60,7 +60,7 @@ async def test_catalog_is_public(client: AsyncClient) -> None:
     response = await client.get("/api/v1/catalog/buildings")
     assert response.status_code == 200
     body = {b["id"]: b for b in response.json()}
-    assert set(body) == {"sede", "poco", "galinheiro", "estabulo"}
+    assert {"sede", "poco", "galinheiro", "estabulo", "moinho", "padaria", "queijaria"} == set(body)
     assert [lvl["plots"] for lvl in body["sede"]["levels"]] == [6, 8, 10, 12]
     assert body["poco"]["levels"][0]["effects"] == [
         {"stat": "crop_grow_time", "value_bp": -200, "scope": None}

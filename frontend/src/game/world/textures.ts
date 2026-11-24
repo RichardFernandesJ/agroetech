@@ -326,6 +326,58 @@ function drawMarket(graphics: Phaser.GameObjects.Graphics): void {
   graphics.fillCircle(86, 58, 4);
 }
 
+function drawWorkshop(graphics: Phaser.GameObjects.Graphics): void {
+  graphics.fillStyle(0x000000, 0.2);
+  graphics.fillEllipse(56, 90, 100, 11);
+
+  // Chaminé com fumaça
+  graphics.fillStyle(0x7d6a5a, 1);
+  graphics.fillRect(78, 8, 14, 30);
+  graphics.fillStyle(0x5c4d41, 1);
+  graphics.fillRect(76, 6, 18, 5);
+  graphics.fillStyle(0xe6e2da, 0.8);
+  graphics.fillCircle(86, 3, 4);
+  graphics.fillCircle(92, -1, 3);
+
+  // Paredes de pedra
+  graphics.fillStyle(0xb9ad9b, 1);
+  graphics.fillRect(8, 36, 96, 52);
+  graphics.fillStyle(0x9d9180, 1);
+  for (let row = 0; row < 3; row += 1) {
+    for (let x = 12 + (row % 2) * 8; x < 100; x += 16) {
+      graphics.fillRect(x, 42 + row * 15, 12, 2);
+    }
+  }
+  graphics.fillStyle(0x7d7160, 1);
+  graphics.fillRect(8, 82, 96, 6);
+
+  // Telhado
+  graphics.fillStyle(0x6d4a2c, 1);
+  graphics.fillTriangle(2, 42, 110, 42, 56, 8);
+  graphics.fillStyle(0x5a3b22, 1);
+  graphics.fillTriangle(2, 42, 56, 8, 56, 42);
+  graphics.lineStyle(3, 0x3f2916, 1);
+  graphics.strokeTriangle(2, 42, 110, 42, 56, 8);
+
+  // Porta e janela
+  graphics.fillStyle(0x5c3b24, 1);
+  graphics.fillRect(44, 56, 24, 32);
+  graphics.fillStyle(0xd8b25a, 1);
+  graphics.fillCircle(63, 73, 2);
+  graphics.fillStyle(0xbfe3ea, 1);
+  graphics.fillRect(16, 54, 18, 16);
+  graphics.lineStyle(2, 0x6d4a2c, 1);
+  graphics.strokeRect(16, 54, 18, 16);
+
+  // Roda do moinho ao lado
+  graphics.lineStyle(3, 0x7a5233, 1);
+  graphics.strokeCircle(92, 66, 13);
+  graphics.lineBetween(92, 53, 92, 79);
+  graphics.lineBetween(79, 66, 105, 66);
+  graphics.lineBetween(83, 57, 101, 75);
+  graphics.lineBetween(101, 57, 83, 75);
+}
+
 function drawBarn(graphics: Phaser.GameObjects.Graphics): void {
   graphics.fillStyle(0x000000, 0.2);
   graphics.fillEllipse(64, 106, 116, 12);
@@ -527,6 +579,7 @@ export function createWorldTextures(scene: Phaser.Scene): void {
   makeTexture(scene, "market", 128, 96, drawMarket);
   makeTexture(scene, "well", 48, 48, drawWell);
   makeTexture(scene, "barn", 128, 112, drawBarn);
+  makeTexture(scene, "workshop", 112, 96, drawWorkshop);
   makeTexture(scene, "crop-sprout", 64, 64, drawCropSprout);
   makeTexture(scene, "crop-growing", 64, 64, drawCropGrowing);
   makeTexture(scene, "crop-mature-milho", 64, 64, (graphics) => drawCropMature(graphics, "milho"));

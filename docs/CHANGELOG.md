@@ -11,6 +11,22 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.9.0] — 2026-11-23
+
+### Adicionado
+
+- **Fabricação (Fase 5):** receitas e `ProductionJobs`. Tabela `production_jobs` (migração `0008`), catálogo em `game/recipes.py` e `CraftingService`.
+- Estações como construções: **Moinho**, **Padaria** e **Queijaria**, com vagas de produção por nível (`BuildingLevel.job_slots`) e aceleração nos níveis 2 e 3.
+- 5 receitas (farinha, pão, bolo, queijo, manteiga) e 5 itens processados, vendáveis no mercado.
+- Endpoints `GET /properties/{id}/crafting`, `POST .../crafting/start` (idempotente) e `POST .../crafting/collect`.
+- Estatísticas `production_time` (escopo por estação) e `production_yield` no motor de modificadores, prontas para o ramo Indústria dos talentos.
+- Painel **🏭 Fabricação** com contagem regressiva, e a **Oficina** clicável no mapa. `PressGuard` compartilhado evita perder cliques em atualizações automáticas (usado também no painel de animais).
+- 16 testes novos (154 no total), incluindo atomicidade (insumo faltando não consome nada), coleta única e idempotência; E2E completo de fabricação.
+
+### Corrigido
+
+- O utilitário do E2E entregava itens à primeira fazenda do banco (e não à do teste em andamento), causando falhas intermitentes. Agora usa a fazenda e o jogador mais recentes.
+
 ## [0.8.0] — 2026-11-23
 
 ### Adicionado
