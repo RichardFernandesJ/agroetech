@@ -17,6 +17,7 @@ from app.api.v1.routes import (
     progress,
     properties,
     talents,
+    trades,
     wallet,
 )
 
@@ -36,3 +37,4 @@ api_router.include_router(buildings.router)
 api_router.include_router(animals.router)
 api_router.include_router(crafting.router)
 api_router.include_router(exchange.router)
+api_router.include_router(trades.router)

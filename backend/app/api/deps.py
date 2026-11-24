@@ -21,6 +21,7 @@ from app.repositories.production_job_repository import ProductionJobRepository
 from app.repositories.progress_repository import ProgressRepository
 from app.repositories.property_repository import PropertyRepository
 from app.repositories.talent_repository import TalentRepository
+from app.repositories.trade_repository import TradeRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.wallet_repository import WalletRepository
 from app.services.animal_service import AnimalService
@@ -37,6 +38,7 @@ from app.services.production_service import ProductionService
 from app.services.progress_service import ProgressService
 from app.services.property_service import PropertyService
 from app.services.talent_service import TalentService
+from app.services.trade_service import TradeService
 from app.services.wallet_service import WalletService
 
 bearer_scheme = HTTPBearer(
@@ -167,6 +169,21 @@ def get_exchange_service(
     )
 
 
+def get_trade_service(
+    db: DbSession,
+    properties: Annotated[PropertyService, Depends(get_property_service)],
+    inventory: Annotated[InventoryService, Depends(get_inventory_service)],
+) -> TradeService:
+    return TradeService(
+        TradeRepository(db),
+        UserRepository(db),
+        inventory,
+        properties,
+        ProgressService(db, ProgressRepository(db)),
+        WalletService(db, WalletRepository(db)),
+    )
+
+
 def get_market_service(
     db: DbSession,
     properties: Annotated[PropertyService, Depends(get_property_service)],
@@ -217,3 +234,4 @@ BuildingServiceDep = Annotated[BuildingService, Depends(get_building_service)]
 AnimalServiceDep = Annotated[AnimalService, Depends(get_animal_service)]
 CraftingServiceDep = Annotated[CraftingService, Depends(get_crafting_service)]
 ExchangeServiceDep = Annotated[ExchangeService, Depends(get_exchange_service)]
+TradeServiceDep = Annotated[TradeService, Depends(get_trade_service)]

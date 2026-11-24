@@ -102,7 +102,7 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 - [x] Taxas (do vendedor, arredondadas para cima) e faixa de preço contra a inflação.
 - [x] Histórico comercial e cotações por item (última venda e menor anúncio).
 - [x] Concorrência: carteiras travadas em ordem fixa, estoque do anúncio decrementado de forma condicional, limite de anúncios serializado.
-- [ ] Trocas diretas entre dois jogadores (`TradeOffers`/`TradeItems`).
+- [x] Trocas diretas entre dois jogadores (`TradeOffers`/`TradeItems`): custódia, aceite atômico, faixa de valor 3:1 e taxa.
 - [ ] Visitação de fazendas (ver a ilha de outro jogador, somente leitura).
 - [ ] Controle de inflação com dados reais (média móvel de preços, alertas) e rate limiting.
 - [ ] WebSocket/SSE para eventos de mercado (hoje a Praça atualiza por consulta a cada 15 s).
@@ -158,6 +158,6 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Próxima entrega recomendada
 
-**Validar** (`docs/VALIDATION.md`, ou o CI do GitHub) e então continuar a Fase 6: **trocas diretas**
-entre dois jogadores (oferta com itens e AGC dos dois lados, aceitação atômica) e **visitação de
-fazendas**. Depois, guildas (cofre e missões coletivas) sobre o mesmo padrão de carteira e ledger.
+**Validar** (`docs/VALIDATION.md` ou o CI do GitHub) e concluir a Fase 6 com a **visitação de fazendas**
+(ver a ilha de outro jogador, somente leitura) e um painel de preços do mercado. Depois, guildas (cofre e
+missões coletivas) sobre o mesmo padrão de carteira, ledger, custódia e ordem de travas.

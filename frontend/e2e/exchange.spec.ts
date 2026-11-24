@@ -1,31 +1,15 @@
 import { execFileSync } from "node:child_process";
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+import { signUp } from "./support/players";
 
 const db = (...args: string[]): void => {
   execFileSync("python", ["e2e/support/e2e_db.py", ...args]);
 };
 
-/** Cria uma conta nova em um contexto isolado (cada jogador tem a própria sessão). */
-async function signUp(browser: Browser, label: string): Promise<Page> {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-  const page = await context.newPage();
-  const id = `${Date.now().toString(36)}${label}`;
-  await page.goto("/");
-  await page.getByRole("tab", { name: "Criar conta" }).click();
-  await page.locator('input[name="email"]').fill(`e2e_${id}@example.com`);
-  await page.locator('input[name="username"]').fill(`e2e_${id}`);
-  await page.locator('input[name="password"]').fill("senha-forte-123");
-  await page.getByRole("button", { name: "Criar conta e entrar" }).click();
-  await page.locator('input[name="name"]').fill(label === "v" ? "Vendedora" : "Comprador");
-  await page.getByRole("button", { name: "Começar a cultivar" }).click();
-  await expect(page.locator(".hud-level-label")).toContainText("0/50 XP");
-  await expect(page.locator(".hud-balance")).toContainText("100 AGC");
-  return page;
-}
-
 test("praça: uma jogadora anuncia e outro jogador compra, com taxa e histórico", async ({ browser }) => {
   // Vendedora: nível 10 e 20 milhos.
-  const seller = await signUp(browser, "v");
+  const { page: seller } = await signUp(browser, "v", "Vendedora");
   db("boost", "2250", "100");
   db("give", "crop_milho", "20");
 
@@ -42,7 +26,7 @@ test("praça: uma jogadora anuncia e outro jogador compra, com taxa e histórico
   await expect(seller.locator(".tab.active")).toContainText("Meus anúncios (1)");
 
   // Comprador: nível 10, procura o anúncio e compra 5 unidades.
-  const buyer = await signUp(browser, "c");
+  const { page: buyer } = await signUp(browser, "c", "Comprador");
   db("boost", "2250", "100");
   await buyer.locator('[data-menu="exchange"]').click();
   await expect(buyer.locator(".listing-row")).toHaveCount(1);

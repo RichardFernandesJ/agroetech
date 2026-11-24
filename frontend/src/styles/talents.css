@@ -1042,3 +1042,85 @@
 .sell-summary strong {
   color: var(--gold-strong);
 }
+
+/* ------------------------------------------------------------------ */
+/* Trocas diretas                                                      */
+/* ------------------------------------------------------------------ */
+
+.trade-cards {
+  display: grid;
+  gap: 10px;
+}
+
+.trade-card {
+  padding: 12px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(6, 14, 9, 0.6);
+}
+
+.trade-card.status-pending {
+  border-color: rgba(232, 205, 134, 0.45);
+}
+
+.trade-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trade-status {
+  color: var(--gold);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+}
+
+.trade-card p {
+  margin: 6px 0 0;
+  color: var(--cream);
+  font-size: 13px;
+}
+
+.trade-card p > span {
+  color: var(--muted);
+}
+
+.trade-card small {
+  color: var(--muted);
+}
+
+.side-editor {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.side-editor h4 {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.draft-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  color: var(--cream);
+  font-size: 13px;
+}
+
+.draft-line span {
+  min-width: 140px;
+}
+
+.draft-line strong {
+  min-width: 36px;
+  text-align: center;
+  color: var(--gold-strong);
+}

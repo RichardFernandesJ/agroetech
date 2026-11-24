@@ -397,3 +397,113 @@ async def test_cancel_and_purchase_race_never_does_both(
         "crop_milho", 0
     )
     assert bought + returned == 10 and (bought, returned) in {(10, 0), (0, 10)}
+
+
+# ------------------------------------------------------- trocas diretas
+async def test_concurrent_accepts_settle_a_trade_only_once(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    from tests.test_trades import BASE, _propose, _scene
+
+    bia = await _scene(client, auth_headers, property_id, session_factory)
+    offer_id = (await _propose(client, auth_headers)).json()["id"]
+    responses = await asyncio.gather(
+        *[client.post(f"{BASE}/{offer_id}/accept", headers=bia.headers) for _ in range(8)]
+    )
+    assert _statuses(responses).count(200) == 1
+    ana = await inventory_quantities(client, property_id, auth_headers)
+    assert (ana["crop_milho"], ana["animal_leite"]) == (20, 5)  # trocou uma vez só
+
+
+async def test_accept_and_cancel_race_resolves_exactly_one_way(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    from tests.test_trades import BASE, _propose, _scene
+
+    bia = await _scene(client, auth_headers, property_id, session_factory)
+    start = (await client.get("/api/v1/wallet", headers=auth_headers)).json()["balance"]
+    offer_id = (await _propose(client, auth_headers)).json()["id"]
+    accept, cancel = await asyncio.gather(
+        client.post(f"{BASE}/{offer_id}/accept", headers=bia.headers),
+        client.post(f"{BASE}/{offer_id}/cancel", headers=auth_headers),
+    )
+    assert sorted([accept.status_code == 200, cancel.status_code == 200]) == [False, True]
+    ana = await inventory_quantities(client, property_id, auth_headers)
+    balance = (await client.get("/api/v1/wallet", headers=auth_headers)).json()["balance"]
+    if cancel.status_code == 200:  # voltou tudo, inclusive a taxa
+        assert (ana["crop_milho"], balance) == (30, start)
+        assert "animal_leite" not in ana
+    else:  # trocou: Ana pagou 20 AGC + taxa 2
+        assert (ana["crop_milho"], ana["animal_leite"], balance) == (20, 5, start - 22)
+
+
+async def test_crossing_trades_accepted_at_the_same_time_do_not_deadlock(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    from tests.test_exchange import _give
+    from tests.test_trades import BASE, _body, _scene
+
+    bia = await _scene(client, auth_headers, property_id, session_factory)
+    await _give(session_factory, bia.property_id, "crop_milho", 40)
+    await _give(session_factory, property_id, "animal_leite", 40)
+    small_ana = _body(
+        offer_agc=0,
+        offer_items=[{"item_id": "crop_milho", "quantity": 2}],
+        request_items=[{"item_id": "animal_leite", "quantity": 1}],
+    )
+    small_bia = _body(
+        recipient="ana_fazendeira",
+        offer_agc=0,
+        offer_items=[{"item_id": "animal_leite", "quantity": 1}],
+        request_items=[{"item_id": "crop_milho", "quantity": 2}],
+    )
+    ana_offers, bia_offers = [], []
+    for _ in range(4):
+        ana_offers.append(
+            (await client.post(BASE, headers=auth_headers, json=small_ana)).json()["id"]
+        )
+        bia_offers.append(
+            (await client.post(BASE, headers=bia.headers, json=small_bia)).json()["id"]
+        )
+
+    responses = await asyncio.wait_for(
+        asyncio.gather(
+            *[client.post(f"{BASE}/{i}/accept", headers=bia.headers) for i in ana_offers],
+            *[client.post(f"{BASE}/{i}/accept", headers=auth_headers) for i in bia_offers],
+        ),
+        timeout=60,
+    )
+    assert set(_statuses(responses)) == {200}
+
+
+async def test_concurrent_proposals_respect_the_pending_limit(
+    client: AsyncClient,
+    auth_headers: Headers,
+    property_id: str,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    from app.game.trade import MAX_PENDING_OUTGOING
+    from tests.test_trades import _propose, _scene
+
+    await _scene(client, auth_headers, property_id, session_factory)
+    small = {
+        "offer_items": [{"item_id": "crop_milho", "quantity": 1}],
+        "offer_agc": 0,
+        "request_items": [{"item_id": "animal_leite", "quantity": 1}],
+    }
+    responses = await asyncio.gather(
+        *[_propose(client, auth_headers, **small) for _ in range(MAX_PENDING_OUTGOING + 6)]
+    )
+    assert _statuses(responses).count(201) == MAX_PENDING_OUTGOING
+    assert (await inventory_quantities(client, property_id, auth_headers))["crop_milho"] == (
+        30 - MAX_PENDING_OUTGOING
+    )

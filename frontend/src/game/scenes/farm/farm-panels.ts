@@ -12,6 +12,7 @@ import { MarketModal } from "@/ui/market-modal";
 import { ModalManager } from "@/ui/modal-manager";
 import { PlantingModal } from "@/ui/planting-modal";
 import { TalentModal } from "@/ui/talent-modal";
+import { TradeModal } from "@/ui/trade-modal";
 
 import type { FarmController } from "./farm-controller";
 import type { FarmState } from "./farm-state";
@@ -64,6 +65,12 @@ export class FarmPanels {
         label: "🤝 Praça",
         title: "Comprar e vender itens com outros jogadores",
         onClick: () => this.openExchange(),
+      },
+      {
+        id: "trades",
+        label: "🔁 Trocas",
+        title: "Trocar itens e AGC diretamente com outro jogador",
+        onClick: () => this.openTrades(),
       },
       {
         id: "talents",
@@ -223,6 +230,28 @@ export class FarmPanels {
     this.modals.open(
       (close) =>
         new ExchangeModal({
+          propertyId,
+          token,
+          onChange: () => {
+            void controller.refreshInventory();
+            void controller.refreshBalance();
+          },
+          onClose: close,
+        }),
+    );
+  }
+
+  openTrades(): void {
+    const { state, controller } = this.deps;
+    if (!state.property || !state.token) {
+      return;
+    }
+
+    const propertyId = state.property.id;
+    const token = state.token;
+    this.modals.open(
+      (close) =>
+        new TradeModal({
           propertyId,
           token,
           onChange: () => {

@@ -361,3 +361,26 @@ controle de inflação, histórico comercial, transações atômicas e proteçã
 
 **Consequências:** O padrão (custódia + CAS + ordem de travas) serve às trocas diretas e ao cofre de
 guilda. Fica em aberto: limites diários de volume por conta e detecção de contas parceiras.
+
+## ADR-022 — Trocas diretas: valor equilibrado, custódia e carteira como trava por jogador
+
+**Contexto:** A troca direta permite mover itens e AGC entre dois jogadores fora da Praça, onde a faixa
+de preço impede transferências desproporcionais. Sem uma regra equivalente, a troca viraria o caminho para
+"presentear" contas de fachada.
+
+**Decisão:**
+1. Os dois lados precisam ter valor e o maior pode valer, no máximo, 3x o menor (valores de referência do
+   NPC; AGC 1:1). É a mesma ideia da faixa de 50% a 300% da Praça aplicada ao conjunto da troca.
+2. Custódia do proponente (itens, AGC e a taxa dele) na criação; o aceite liquida os dois lados numa única
+   transação e a proposta só sai de `pending` uma vez (atualização condicional).
+3. A taxa de cada parte (2% do que ela entrega, arredondada para cima) sai da economia; se não houver troca,
+   a do proponente é devolvida junto com o resto, para recusar ou deixar vencer nunca ser um custo.
+4. **Ordem de travas:** sempre carteiras (por id de usuário) e depois a proposta. A carteira funciona como
+   trava por jogador, então operações que envolvem o mesmo jogador (propor, aceitar, cancelar, expirar) se
+   serializam e as que envolvem jogadores diferentes não se cruzam. As varreduras de expiração percorrem as
+   propostas em ordem fixa (proponente, id) pelo mesmo motivo.
+5. Expiração sob demanda (ao consultar), sem processo em segundo plano.
+
+**Consequências:** Cofres e missões de guilda podem reutilizar custódia + atualização condicional + ordem de
+travas. Em aberto: limite diário de volume por conta, detecção de contas parceiras e notificação em tempo real
+(hoje o destinatário vê a proposta ao abrir o painel ou na atualização a cada 12 s).

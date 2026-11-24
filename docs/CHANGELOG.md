@@ -11,6 +11,17 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.13.0] — 2026-11-24
+
+### Adicionado
+
+- **Trocas diretas entre jogadores (Fase 6):** tabelas `trade_offers` e `trade_items` (migração `0012`), `TradeService` e rotas `/trades` (info, jogadores, listar, propor, aceitar, recusar e cancelar).
+- Custódia do lado do proponente (itens, AGC e taxa), aceite atômico dos dois lados, devolução integral na recusa/cancelamento/expiração e idempotência da proposta.
+- Regras de equilíbrio: os dois lados precisam ter valor, razão máxima de 3:1 pelos valores de referência, taxa de 2% por parte arredondada para cima, nível 3, até 5 pendentes.
+- Ordem de travas definida (carteiras por usuário e depois a proposta) para aceitar, cancelar, recusar e expirar nunca se bloquearem.
+- Painel **🔁 Trocas** (Recebidas, Enviadas e Nova troca) por cliques; E2E com dois jogadores (`e2e/trades.spec.ts`) e auxiliar compartilhado `e2e/support/players.ts`.
+- 14 testes de API, 4 de concorrência em PostgreSQL (aceites paralelos, aceitar × cancelar, propostas cruzadas sem deadlock, limite de pendentes) e o roteiro de fumaça passa a checar as trocas (209 testes ativos + 18 só de PostgreSQL).
+
 ## [0.12.0] — 2026-11-23
 
 ### Adicionado

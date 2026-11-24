@@ -198,6 +198,15 @@ como o gestor supremo da fazenda:
   (última venda e menor anúncio) em cada item.
 - Interface: botão **🤝 Praça**; quantidade e preço por botões (±, Mín, Referência, Máx, Mais barato).
 
+## 6.5 Trocas diretas
+
+- Dois jogadores combinam itens e/ou AGC. O lado de quem propõe fica em custódia até a resposta; recusa,
+  cancelamento ou 24 h sem resposta devolvem tudo (inclusive a taxa).
+- Os dois lados precisam ter valor e o maior pode valer até 3× o menor (valores de referência do
+  entreposto), para a troca não virar presente entre contas de fachada.
+- Taxa de 2% por parte (arredondada para cima), que sai da economia. Nível 3 e até 5 propostas pendentes.
+- Interface: botão **🔁 Trocas** (Recebidas, Enviadas e Nova troca), tudo por cliques.
+
 ## 7. Progressão
 
 **Implementado:** XP e nível (1 a 50) por jogador. Plantar rende 2 XP; colher rende

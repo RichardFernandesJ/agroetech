@@ -291,6 +291,16 @@ Histórico imutável: uma linha por compra (inclusive parcial).
 
 Índices por comprador, vendedor (com `created_at`) e item. Migração: `0011_exchange`.
 
+### `trade_offers` e `trade_items`
+
+`trade_offers`: `proposer_id`, `recipient_id` (FKs, **distintos** por CHECK), `proposer_property_id`
+(para onde voltam os itens), `status`, `offer_agc`/`request_agc` (`>= 0`), `proposer_fee`, `expires_at`,
+`resolved_at` e `request_key` (idempotência, único por proponente). Índices por destinatário e por
+proponente com `status`.
+
+`trade_items`: `offer_id` (CASCADE), `side` (`offer` do proponente | `request` do destinatário), `item_id` e
+`quantity >= 1`, único por `(offer_id, side, item_id)`. Migração: `0012_trades`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:

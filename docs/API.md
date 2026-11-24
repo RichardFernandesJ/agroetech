@@ -538,6 +538,46 @@ O vendedor cancela e recebe de volta o que sobrou (`404` para quem não é o don
 
 Histórico comercial do jogador (compras e vendas) com a contraparte e o efeito no saldo.
 
+### Trocas diretas (Fase 6)
+
+Duas pessoas trocam itens e/ou AGC. Regras (em `backend/app/game/trade.py`):
+
+- **Custódia:** ao propor, o lado do proponente (itens, AGC e a taxa dele) sai da conta e fica na proposta. Se
+  a troca não acontece (recusa, cancelamento ou 24 h sem resposta), **tudo volta, inclusive a taxa**.
+- **Aceite atômico:** o destinatário entrega o lado dele (itens, AGC e a taxa dele) e recebe o do proponente
+  numa única transação. Aceitar e cancelar ao mesmo tempo nunca liquidam duas vezes.
+- **Sem presentes e sem trocas absurdas:** os dois lados precisam ter valor e o lado maior pode valer no
+  máximo **3×** o menor, pelos valores de referência do entreposto (itens) e AGC 1:1. Isso impede usar a
+  troca para transferir riqueza entre contas de fachada fora da faixa de preço da Praça.
+- **Taxa:** 2% do valor que cada parte entrega, arredondada para cima (mínimo de 1 AGC), sai da economia.
+- Nível 3 para os dois, até 5 propostas pendentes por jogador, até 4 tipos de item por lado.
+
+#### GET `/api/v1/trades/info` · GET `/api/v1/trades/players?q=` 🔒
+
+Regras e itens negociáveis (com valor), e busca de jogadores com nível suficiente (prefixo do nome,
+sem curingas).
+
+#### GET `/api/v1/trades` 🔒
+
+Propostas enviadas (`direction: "out"`) e recebidas (`"in"`), com os dois lados (`items`, `agc`, `value`),
+`status` (`pending`, `accepted`, `declined`, `cancelled`, `expired`) e a taxa do jogador (`your_fee`).
+A devolução da custódia de propostas vencidas acontece ao consultar.
+
+#### POST `/api/v1/trades` 🔒
+
+```json
+{ "recipient": "bia_roca",
+  "offer_items": [{"item_id": "crop_milho", "quantity": 10}], "offer_agc": 20,
+  "request_items": [{"item_id": "animal_leite", "quantity": 5}], "request_agc": 0 }
+```
+
+Aceita `Idempotency-Key`. `404` jogador inexistente, `422` regras (nível, valor, estoque, saldo, limites).
+
+#### POST `/api/v1/trades/{id}/accept` · `/decline` · `/cancel` 🔒
+
+Aceitar e recusar são do destinatário; cancelar, do proponente (`404` para os demais; `422` se já encerrada).
+No ledger: `trade_escrow`, `trade_refund`, `trade_paid` e `trade_received`.
+
 ## 7. Infra
 
 | Método | Rota | Descrição |

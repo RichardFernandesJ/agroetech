@@ -25,6 +25,10 @@ const KIND_LABELS: Record<string, string> = {
   talent_respec: "Redefinição de talentos",
   p2p_purchase: "Compra na Praça",
   p2p_sale: "Venda na Praça",
+  trade_escrow: "Troca: custódia da proposta",
+  trade_refund: "Troca: custódia devolvida",
+  trade_paid: "Troca: pagamento",
+  trade_received: "Troca: recebimento",
 };
 
 function escapeHtml(value: string): string {

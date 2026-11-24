@@ -11,6 +11,7 @@ from app.models.production_job import ProductionJob
 from app.models.progress import PlayerProgress
 from app.models.property import Property
 from app.models.talent import PresetNode, TalentPreset, TalentRespec
+from app.models.trade import TradeItem, TradeOffer
 from app.models.user import User
 from app.models.wallet import Wallet, WalletLedgerEntry
 
@@ -27,6 +28,8 @@ __all__ = [
     "ProductionJob",
     "TalentPreset",
     "TalentRespec",
+    "TradeItem",
+    "TradeOffer",
     "PlayerProgress",
     "Property",
     "User",
