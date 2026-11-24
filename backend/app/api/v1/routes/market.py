@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Header
 
 from app.api.deps import CurrentUser, MarketServiceDep, TalentServiceDep
-from app.game.catalog import ITEM_CATALOG, crop_id_for_item, get_item
+from app.game.catalog import ITEM_CATALOG, get_item, sell_scope_for_item
 from app.game.economy import SALE_FEE_BASIS_POINTS, product_prices, seed_prices
 from app.game.modifiers import Stat, effective_fee_bp
 from app.schemas.market import MarketOffersRead, OfferRead, TradeRead, TradeRequest
@@ -66,7 +66,7 @@ async def list_offers(
             buy_price=buy.get(item.id),
             sell_price=sell.get(item.id),
             sell_bonus_bp=(
-                modifiers.total_bp(Stat.SELL_PRICE, crop_id_for_item(item.id))
+                modifiers.total_bp(Stat.SELL_PRICE, sell_scope_for_item(item.id))
                 if item.id in sell
                 else 0
             ),

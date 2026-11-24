@@ -40,12 +40,12 @@ def test_recipes_do_not_loop_into_themselves() -> None:
 
 
 def test_processing_adds_value_without_free_money() -> None:
-    """Produzir vale a pena (ganho entre 15% e 100% sobre os insumos), sem ser dinheiro fácil."""
+    """Produzir vale a pena (ganho entre 15% e 110% sobre os insumos), sem ser dinheiro fácil."""
     prices = product_prices()
     for recipe in RECIPES.values():
         cost = sum(prices[item] * quantity for item, quantity in recipe.inputs.items())
         revenue = prices[recipe.output_item] * recipe.output_quantity
-        assert 1.15 <= revenue / cost <= 2.0, (recipe.id, revenue / cost)
+        assert 1.15 <= revenue / cost <= 2.1, (recipe.id, revenue / cost)
 
 
 def test_batch_limit_is_sane() -> None:

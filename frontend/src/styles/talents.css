@@ -951,3 +951,9 @@
     max-width: calc(100vw - 24px);
   }
 }
+
+.bonus-tag {
+  color: var(--gold-strong);
+  font-size: 11px;
+  white-space: nowrap;
+}

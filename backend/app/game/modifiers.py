@@ -29,6 +29,12 @@ class Stat:
     # Fabricação: o escopo do tempo é o id da estação (ex.: "moinho").
     PRODUCTION_TIME = "production_time"
     PRODUCTION_YIELD = "production_yield"
+    # Chance (por lote) de não gastar os insumos; escopo = estação.
+    PRODUCTION_SAVING = "production_saving"
+    # Animais (escopo = espécie): mais produtos, produção mais rápida, ração que rende mais.
+    ANIMAL_YIELD = "animal_yield"
+    ANIMAL_SPEED = "animal_speed"
+    FEED_EFFICIENCY = "feed_efficiency"
 
 
 # Intervalo permitido para a soma de bônus de cada estatística (em pontos-base).
@@ -42,6 +48,10 @@ STAT_LIMITS: dict[str, tuple[int, int]] = {
     Stat.MARKET_FEE: (-400, 0),
     Stat.PRODUCTION_TIME: (-2_500, 0),
     Stat.PRODUCTION_YIELD: (0, 3_000),
+    Stat.PRODUCTION_SAVING: (0, 2_500),
+    Stat.ANIMAL_YIELD: (0, 3_000),
+    Stat.ANIMAL_SPEED: (-2_500, 0),
+    Stat.FEED_EFFICIENCY: (0, 3_000),
 }
 
 # Estatísticas cuja mecânica já existe no jogo. Talentos só podem usar estas.
@@ -100,6 +110,11 @@ def scale(base: int, bonus_bp: int, rng: random.Random) -> int:
 
 def roll(chance_bp: int, rng: random.Random) -> bool:
     return chance_bp > 0 and rng.randrange(BP) < chance_bp
+
+
+def free_batches(batches: int, saving_bp: int, rng: random.Random) -> int:
+    """Quantos lotes saem sem gastar insumos (um sorteio por lote)."""
+    return sum(1 for _ in range(batches) if roll(saving_bp, rng))
 
 
 def scaled_seconds(base_seconds: int, bonus_bp: int) -> int:

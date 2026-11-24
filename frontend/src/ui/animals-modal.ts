@@ -137,7 +137,7 @@ export class AnimalsModal {
           </div>
           <span class="animal-stored">${PRODUCT_ICONS[animal.product_item] ?? "📦"} ${animal.stored}/${animal.max_stored}</span>
         </div>
-        <p class="animal-next">${next}</p>
+        <p class="animal-next">${next}${this.bonusTag(animal)}</p>
         <div class="animal-feed">
           <span>Ração: ${feedName} (você tem ${stock})</span>
           <span class="trade-actions">
@@ -147,6 +147,19 @@ export class AnimalsModal {
           </span>
         </div>
       </article>`;
+  }
+
+  /** Indica quando os talentos melhoram este animal (velocidade e quantidade). */
+  private bonusTag(animal: Animal): string {
+    const base = this.state?.species.find((s) => s.id === animal.species)?.produce_seconds;
+    const tags: string[] = [];
+    if (base && animal.produce_seconds < base) {
+      tags.push(`⏱ ${formatDuration(animal.produce_seconds)} por produto`);
+    }
+    if (animal.yield_bonus_bp > 0) {
+      tags.push(`+${animal.yield_bonus_bp / 100}% produtos`);
+    }
+    return tags.length > 0 ? ` <span class="bonus-tag">${tags.join(" · ")}</span>` : "";
   }
 
   private speciesCard(species: Species): string {

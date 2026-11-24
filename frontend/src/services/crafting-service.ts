@@ -22,6 +22,9 @@ export interface Station {
   used_slots: number;
   /** Bônus no tempo de produção da estação, em pontos-base (negativo = mais rápido). */
   time_bonus_bp: number;
+  /** Bônus de rendimento e chance de lote grátis, em pontos-base. */
+  yield_bonus_bp: number;
+  saving_bp: number;
   jobs: CraftingJob[];
 }
 

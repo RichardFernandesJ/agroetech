@@ -30,6 +30,9 @@ class StationRead(BaseModel):
     used_slots: int
     # Bônus (negativo = mais rápido) no tempo de produção desta estação, em pontos-base.
     time_bonus_bp: int
+    # Bônus de rendimento e chance de lote grátis da estação, em pontos-base.
+    yield_bonus_bp: int = 0
+    saving_bp: int = 0
     jobs: list[JobRead]
 
 

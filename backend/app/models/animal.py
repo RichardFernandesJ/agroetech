@@ -40,5 +40,9 @@ class Animal(Base, TimestampMixin):
     last_sync_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     # Segundos alimentados já acumulados rumo ao próximo produto.
     progress_seconds: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    # Bônus (talentos) vigentes quando o animal foi alimentado com fome: valem durante toda
+    # a ração acumulada, então trocar de build depois não altera a produção já em curso.
+    speed_bp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    yield_bp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     # Produtos prontos para coleta.
     stored: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

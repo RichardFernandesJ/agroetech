@@ -32,14 +32,33 @@ export const STAT_LABELS: Record<string, string> = {
   market_fee: "Taxa de venda",
   production_time: "Tempo de fabricação",
   production_yield: "Rendimento da fabricação",
+  production_saving: "Chance de lote sem gastar insumos",
+  animal_yield: "Produtos dos animais",
+  animal_speed: "Tempo de produção dos animais",
+  feed_efficiency: "Rendimento da ração",
 };
 
+/** Nomes dos escopos: culturas, espécies, produtos e estações. */
 const CROP_NAMES: Record<string, string> = {
   milho: "Milho",
   cenoura: "Cenoura",
   tomate: "Tomate",
   morango: "Morango",
   cafe: "Café",
+  galinha: "Galinhas",
+  vaca: "Vacas",
+  ovelha: "Ovelhas",
+  ovo: "Ovos",
+  leite: "Leite",
+  la: "Lã",
+  farinha: "Farinha",
+  pao: "Pão",
+  bolo: "Bolo",
+  queijo: "Queijo",
+  manteiga: "Manteiga",
+  moinho: "Moinho",
+  padaria: "Padaria",
+  queijaria: "Queijaria",
 };
 
 export function buildContext(

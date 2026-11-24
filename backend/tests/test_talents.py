@@ -60,7 +60,12 @@ async def test_talent_catalog_is_public_and_complete(client: AsyncClient) -> Non
     assert response.status_code == 200
     body = response.json()
     assert len(body["branches"]) == 6
-    assert {b["id"] for b in body["branches"] if b["available"]} == {"agricultura", "comercio"}
+    assert {b["id"] for b in body["branches"] if b["available"]} == {
+        "agricultura",
+        "comercio",
+        "pecuaria",
+        "industria",
+    }
     node = next(n for n in body["nodes"] if n["id"] == "agro_solo_fertil")
     assert node["cost"] == 1 and node["tier_name"] == "Básico"
     assert node["effects"] == [{"stat": "crop_yield", "value_bp": 200, "scope": None}]

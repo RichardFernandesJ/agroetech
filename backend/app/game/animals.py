@@ -56,9 +56,9 @@ ANIMALS: dict[str, AnimalDefinition] = {
         product_item="animal_ovo",
         product_name="Ovo",
         product_description="Ovos frescos do galinheiro.",
-        sell_price=4,
+        sell_price=5,
         feed_item="crop_milho",
-        feed_seconds=1800,
+        feed_seconds=2100,
         xp_per_product=1,
     ),
     "vaca": AnimalDefinition(
@@ -74,7 +74,7 @@ ANIMALS: dict[str, AnimalDefinition] = {
         product_description="Leite fresco do estábulo.",
         sell_price=9,
         feed_item="crop_cenoura",
-        feed_seconds=1800,
+        feed_seconds=2100,
         xp_per_product=2,
     ),
     "ovelha": AnimalDefinition(
@@ -90,7 +90,7 @@ ANIMALS: dict[str, AnimalDefinition] = {
         product_description="Lã macia tosquiada no estábulo.",
         sell_price=14,
         feed_item="crop_milho",
-        feed_seconds=1800,
+        feed_seconds=2100,
         xp_per_product=3,
     ),
 }

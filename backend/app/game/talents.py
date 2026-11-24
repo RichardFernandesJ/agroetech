@@ -10,8 +10,10 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from app.game.animals import ANIMALS
 from app.game.catalog import CROPS
 from app.game.modifiers import IMPLEMENTED_STATS, Effect, Stat
+from app.game.recipes import PROCESSED_ITEMS, RECIPES
 
 # camada -> (custo em pontos, nível mínimo)
 TIERS: dict[int, tuple[int, int]] = {
@@ -48,8 +50,8 @@ BRANCHES: tuple[Branch, ...] = (
         270,
     ),
     Branch("comercio", "Comércio e Economia", "Preços, taxas e negociações.", True, 330),
-    Branch("pecuaria", "Pecuária e Criação", "Animais e seus produtos.", False, 30),
-    Branch("industria", "Indústria e Tecnologia", "Processamento e automação.", False, 90),
+    Branch("pecuaria", "Pecuária e Criação", "Animais e seus produtos.", True, 30),
+    Branch("industria", "Indústria e Tecnologia", "Processamento e automação.", True, 90),
     Branch(
         "exploracao",
         "Exploração e Conhecimento",
@@ -143,6 +145,8 @@ def _e(stat: str, pct: float, scope: str | None = None) -> Effect:
 
 _AGRO = "agricultura"
 _COM = "comercio"
+_PEC = "pecuaria"
+_IND = "industria"
 
 NODES: tuple[TalentNode, ...] = (
     # ----------------------------------------------------------------- Agricultura
@@ -431,6 +435,297 @@ NODES: tuple[TalentNode, ...] = (
         branch_points=((_AGRO, 6), (_COM, 6)),
         angle=300,
     ),
+    # ------------------------------------------------------------------- Pecuária
+    _node(
+        "pec_pasto_verde",
+        "Pasto Verde",
+        "+2% de produtos dos animais.",
+        _PEC,
+        1,
+        -1,
+        (_e(Stat.ANIMAL_YIELD, 2),),
+    ),
+    _node(
+        "pec_cocho_farto",
+        "Cocho Farto",
+        "A ração rende 4% mais.",
+        _PEC,
+        1,
+        0,
+        (_e(Stat.FEED_EFFICIENCY, 4),),
+    ),
+    _node(
+        "pec_manejo",
+        "Manejo Gentil",
+        "-2% no tempo de produção dos animais.",
+        _PEC,
+        1,
+        1,
+        (_e(Stat.ANIMAL_SPEED, -2),),
+    ),
+    _node(
+        "pec_avicultor",
+        "Avicultor",
+        "Galinhas: +6% de ovos e -3% no tempo de produção.",
+        _PEC,
+        2,
+        -1.5,
+        (_e(Stat.ANIMAL_YIELD, 6, "galinha"), _e(Stat.ANIMAL_SPEED, -3, "galinha")),
+        requires=("pec_pasto_verde",),
+    ),
+    _node(
+        "pec_leiteiro",
+        "Leiteiro",
+        "Vacas: +6% de leite e -3% no tempo de produção.",
+        _PEC,
+        2,
+        -0.5,
+        (_e(Stat.ANIMAL_YIELD, 6, "vaca"), _e(Stat.ANIMAL_SPEED, -3, "vaca")),
+        requires_any=("pec_pasto_verde", "pec_manejo"),
+    ),
+    _node(
+        "pec_pastor",
+        "Pastor",
+        "Ovelhas: +6% de lã e -3% no tempo de produção.",
+        _PEC,
+        2,
+        0.5,
+        (_e(Stat.ANIMAL_YIELD, 6, "ovelha"), _e(Stat.ANIMAL_SPEED, -3, "ovelha")),
+        requires_any=("pec_cocho_farto", "pec_manejo"),
+    ),
+    _node(
+        "pec_silagem",
+        "Silagem",
+        "A ração rende 6% mais.",
+        _PEC,
+        2,
+        1.5,
+        (_e(Stat.FEED_EFFICIENCY, 6),),
+        requires=("pec_cocho_farto",),
+    ),
+    _node(
+        "pec_genetica",
+        "Genética Selecionada",
+        "+4% de produtos dos animais.",
+        _PEC,
+        3,
+        -1,
+        (_e(Stat.ANIMAL_YIELD, 4),),
+        requires_any=("pec_avicultor", "pec_leiteiro"),
+    ),
+    _node(
+        "pec_ordenha",
+        "Rotina de Ordenha",
+        "-5% no tempo de produção dos animais.",
+        _PEC,
+        3,
+        0,
+        (_e(Stat.ANIMAL_SPEED, -5),),
+        requires_any=("pec_leiteiro", "pec_pastor"),
+    ),
+    _node(
+        "pec_nutricao",
+        "Nutrição Balanceada",
+        "A ração rende 8% mais e +4% de XP.",
+        _PEC,
+        3,
+        1,
+        (_e(Stat.FEED_EFFICIENCY, 8), _e(Stat.XP_GAIN, 4)),
+        requires_any=("pec_pastor", "pec_silagem"),
+    ),
+    _node(
+        "pec_mestre_rebanho",
+        "Mestre do Rebanho",
+        "+8% de produtos e a ração rende 5% mais.",
+        _PEC,
+        4,
+        -0.5,
+        (_e(Stat.ANIMAL_YIELD, 8), _e(Stat.FEED_EFFICIENCY, 5)),
+        requires_any=("pec_genetica", "pec_ordenha"),
+        exclusive_group="pec_mestre",
+    ),
+    _node(
+        "pec_mestre_manejo",
+        "Mestre do Manejo",
+        "-8% no tempo de produção e a ração rende 6% mais.",
+        _PEC,
+        4,
+        0.5,
+        (_e(Stat.ANIMAL_SPEED, -8), _e(Stat.FEED_EFFICIENCY, 6)),
+        requires_any=("pec_ordenha", "pec_nutricao"),
+        exclusive_group="pec_mestre",
+    ),
+    _node(
+        "pec_fazenda_modelo",
+        "Fazenda Modelo",
+        "+8% de produtos, -4% no tempo de produção e +8% de XP.",
+        _PEC,
+        5,
+        0,
+        (_e(Stat.ANIMAL_YIELD, 8), _e(Stat.ANIMAL_SPEED, -4), _e(Stat.XP_GAIN, 8)),
+        requires_any=("pec_mestre_rebanho", "pec_mestre_manejo"),
+    ),
+    # ------------------------------------------------------------------ Indústria
+    _node(
+        "ind_ferramentas",
+        "Ferramentas Afiadas",
+        "-2% no tempo de fabricação.",
+        _IND,
+        1,
+        -1,
+        (_e(Stat.PRODUCTION_TIME, -2),),
+    ),
+    _node(
+        "ind_aproveitamento",
+        "Aproveitamento",
+        "2% de chance de um lote não gastar insumos.",
+        _IND,
+        1,
+        0,
+        (_e(Stat.PRODUCTION_SAVING, 2),),
+    ),
+    _node(
+        "ind_boa_receita",
+        "Boa Receita",
+        "+2% de rendimento na fabricação.",
+        _IND,
+        1,
+        1,
+        (_e(Stat.PRODUCTION_YIELD, 2),),
+    ),
+    _node(
+        "ind_moleiro",
+        "Moleiro",
+        "Moinho: -5% no tempo e +5% de rendimento.",
+        _IND,
+        2,
+        -1.5,
+        (_e(Stat.PRODUCTION_TIME, -5, "moinho"), _e(Stat.PRODUCTION_YIELD, 5, "moinho")),
+        requires=("ind_ferramentas",),
+    ),
+    _node(
+        "ind_padeiro",
+        "Padeiro",
+        "Padaria: -5% no tempo e +5% de rendimento.",
+        _IND,
+        2,
+        -0.5,
+        (_e(Stat.PRODUCTION_TIME, -5, "padaria"), _e(Stat.PRODUCTION_YIELD, 5, "padaria")),
+        requires_any=("ind_ferramentas", "ind_boa_receita"),
+    ),
+    _node(
+        "ind_queijeiro",
+        "Queijeiro",
+        "Queijaria: -5% no tempo e +5% de rendimento.",
+        _IND,
+        2,
+        0.5,
+        (_e(Stat.PRODUCTION_TIME, -5, "queijaria"), _e(Stat.PRODUCTION_YIELD, 5, "queijaria")),
+        requires_any=("ind_boa_receita", "ind_aproveitamento"),
+    ),
+    _node(
+        "ind_estoque",
+        "Estoque Organizado",
+        "4% de chance de um lote não gastar insumos.",
+        _IND,
+        2,
+        1.5,
+        (_e(Stat.PRODUCTION_SAVING, 4),),
+        requires=("ind_aproveitamento",),
+    ),
+    _node(
+        "ind_linha",
+        "Linha de Produção",
+        "-5% no tempo de fabricação.",
+        _IND,
+        3,
+        -1,
+        (_e(Stat.PRODUCTION_TIME, -5),),
+        requires_any=("ind_moleiro", "ind_padeiro"),
+    ),
+    _node(
+        "ind_otimizacao",
+        "Otimização de Insumos",
+        "5% de chance de um lote não gastar insumos.",
+        _IND,
+        3,
+        0,
+        (_e(Stat.PRODUCTION_SAVING, 5),),
+        requires_any=("ind_padeiro", "ind_queijeiro", "ind_estoque"),
+    ),
+    _node(
+        "ind_qualidade",
+        "Controle de Qualidade",
+        "+5% de rendimento na fabricação.",
+        _IND,
+        3,
+        1,
+        (_e(Stat.PRODUCTION_YIELD, 5),),
+        requires_any=("ind_queijeiro", "ind_estoque"),
+    ),
+    _node(
+        "ind_mestre_eficiencia",
+        "Mestre da Eficiência",
+        "6% de chance de lote grátis e -5% no tempo.",
+        _IND,
+        4,
+        -0.5,
+        (_e(Stat.PRODUCTION_SAVING, 6), _e(Stat.PRODUCTION_TIME, -5)),
+        requires_any=("ind_linha", "ind_otimizacao"),
+        exclusive_group="ind_mestre",
+    ),
+    _node(
+        "ind_mestre_volume",
+        "Mestre do Volume",
+        "+8% de rendimento e -3% no tempo.",
+        _IND,
+        4,
+        0.5,
+        (_e(Stat.PRODUCTION_YIELD, 8), _e(Stat.PRODUCTION_TIME, -3)),
+        requires_any=("ind_otimizacao", "ind_qualidade"),
+        exclusive_group="ind_mestre",
+    ),
+    _node(
+        "ind_fabrica",
+        "Fábrica Lendária",
+        "+8% de rendimento, 5% de lote grátis e -6% no tempo.",
+        _IND,
+        5,
+        0,
+        (_e(Stat.PRODUCTION_YIELD, 8), _e(Stat.PRODUCTION_SAVING, 5), _e(Stat.PRODUCTION_TIME, -6)),
+        requires_any=("ind_mestre_eficiencia", "ind_mestre_volume"),
+    ),
+    # -------------------------------------------------------- Híbridos (novos)
+    _node(
+        "hib_laticinios",
+        "Laticínios",
+        "Híbrido Pecuária + Indústria: leite, queijo e manteiga valem +8% no mercado.",
+        HYBRID,
+        3,
+        0,
+        (
+            _e(Stat.SELL_PRICE, 8, "leite"),
+            _e(Stat.SELL_PRICE, 8, "queijo"),
+            _e(Stat.SELL_PRICE, 8, "manteiga"),
+        ),
+        branch_points=((_PEC, 6), (_IND, 6)),
+        angle=60,
+    ),
+    _node(
+        "hib_feira_pecuaria",
+        "Feira de Produtos",
+        "Híbrido Comércio + Pecuária: ovos, leite e lã valem +8% no mercado.",
+        HYBRID,
+        3,
+        0,
+        (
+            _e(Stat.SELL_PRICE, 8, "ovo"),
+            _e(Stat.SELL_PRICE, 8, "leite"),
+            _e(Stat.SELL_PRICE, 8, "la"),
+        ),
+        branch_points=((_COM, 6), (_PEC, 6)),
+        angle=0,
+    ),
 )
 
 NODES_BY_ID: dict[str, TalentNode] = {node.id: node for node in NODES}
@@ -448,7 +743,10 @@ def validate_catalog() -> list[str]:
     """Retorna problemas de consistência do catálogo (vazio = válido)."""
     problems: list[str] = []
     seen_positions: set[tuple[int, int]] = set()
-    crops = set(CROPS)
+    # Escopos aceitos: culturas, espécies, produtos (leite, pão...) e estações.
+    scopes = set(CROPS) | set(ANIMALS) | {recipe.station for recipe in RECIPES.values()}
+    scopes |= {animal.product_item.partition("_")[2] for animal in ANIMALS.values()}
+    scopes |= {item_id.partition("_")[2] for item_id in PROCESSED_ITEMS}
 
     for node in NODES:
         if node.branch != HYBRID:
@@ -465,7 +763,7 @@ def validate_catalog() -> list[str]:
         for effect in node.effects:
             if effect.stat not in IMPLEMENTED_STATS:
                 problems.append(f"{node.id}: estatística não implementada {effect.stat}")
-            if effect.scope is not None and effect.scope not in crops:
+            if effect.scope is not None and effect.scope not in scopes:
                 problems.append(f"{node.id}: escopo desconhecido {effect.scope}")
         if (node.x, node.y) in seen_positions:
             problems.append(f"{node.id}: posição duplicada")

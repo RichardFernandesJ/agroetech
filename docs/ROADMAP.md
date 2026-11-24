@@ -90,11 +90,11 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 - [x] Abrigos: Galinheiro e Estábulo (capacidade por nível).
 - [x] Animais: galinha, vaca e ovelha, com alimentação, produção offline determinística, coleta e XP.
 - [ ] Animais: porco, cabra e abelha (novas entradas no catálogo) e melhorias de animais.
-- [ ] Ramo Pecuária da árvore de talentos (produção, tempo, ração, qualidade).
+- [x] Ramo Pecuária da árvore de talentos (produtos, tempo de produção e ração).
 - [ ] Celeiro (armazenamento) e decoração.
 - [x] Receitas e estações: Moinho, Padaria e Queijaria (engenho e cozinha ficam para depois).
 - [x] `ProductionJobs` para processos com duração, vagas por estação e coleta.
-- [ ] Ramo Indústria da árvore de talentos (as estatísticas de fabricação já existem no motor).
+- [x] Ramo Indústria da árvore de talentos (tempo, rendimento e lote grátis por estação).
 
 ## Fase 6 — Multiplayer econômico ⬜
 
@@ -147,7 +147,7 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Próxima entrega recomendada
 
-**Ramos Pecuária e Indústria da árvore de talentos:** as mecânicas já existem (animais e
-fabricação), então os dois ramos passam de "em breve" para ativos, com novas estatísticas
-no motor e o simulador de paridade estendido a produção animal e fabricação. Depois, o
-fechamento da Fase 5 (engenho/cozinha, porco/cabra/abelha) e a Fase 6 (multiplayer).
+**Fechar a Fase 5 e entrar na Fase 6:** as últimas peças da produção (porco, cabra, abelha,
+engenho e cozinha são só catálogo) e então o multiplayer econômico: mercado global entre
+jogadores, trocas e visitação de fazendas. Antes disso vale validar o ciclo no navegador
+com Docker/PostgreSQL e balancear com dados reais.

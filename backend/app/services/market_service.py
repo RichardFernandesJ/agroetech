@@ -9,7 +9,7 @@ import uuid
 from dataclasses import dataclass
 
 from app.core.exceptions import ConflictError, GameRuleError
-from app.game.catalog import crop_id_for_item, get_item
+from app.game.catalog import get_item, sell_scope_for_item
 from app.game.economy import SALE_FEE_BASIS_POINTS, product_prices, sale_fee, seed_prices
 from app.game.modifiers import BP, Stat, effective_fee_bp
 from app.models.user import User
@@ -101,7 +101,7 @@ class MarketService:
 
         # Talentos: bônus no preço (por cultura) e redução da taxa, com tetos no motor.
         modifiers = await self.modifiers.for_property(user.id, property_id)
-        price_bp = modifiers.total_bp(Stat.SELL_PRICE, crop_id_for_item(item_id))
+        price_bp = modifiers.total_bp(Stat.SELL_PRICE, sell_scope_for_item(item_id))
         fee_bp = effective_fee_bp(SALE_FEE_BASIS_POINTS, modifiers.total_bp(Stat.MARKET_FEE))
         gross = unit_price * quantity * (BP + price_bp) // BP
         fee = sale_fee(gross, fee_bp)

@@ -7,9 +7,11 @@ outras: ``test_talent_balance`` exige que todas fiquem na mesma faixa.
 
 from collections.abc import Iterable
 
-from app.game.catalog import CROPS, CropDefinition
-from app.game.economy import SALE_FEE_BASIS_POINTS
+from app.game.animals import ANIMALS, AnimalDefinition
+from app.game.catalog import CROPS, CropDefinition, sell_scope_for_item
+from app.game.economy import SALE_FEE_BASIS_POINTS, product_prices
 from app.game.modifiers import BP, Effect, ModifierSet, Stat, effective_fee_bp
+from app.game.recipes import RECIPES, RecipeDefinition
 from app.game.talents import NODES_BY_ID
 
 
@@ -47,6 +49,46 @@ def xp_per_hour(node_ids: Iterable[str]) -> float:
         xp = crop.harvest_xp * (BP + mods.total_bp(Stat.XP_GAIN, crop.id)) / BP
         best = max(best, xp * 3600 / cycle)
     return best
+
+
+def _net_price(item_id: str, mods: ModifierSet) -> float:
+    """O que o jogador recebe por 1 unidade vendida (bônus de preço e taxa efetiva)."""
+    bonus = mods.total_bp(Stat.SELL_PRICE, sell_scope_for_item(item_id))
+    fee_bp = effective_fee_bp(SALE_FEE_BASIS_POINTS, mods.total_bp(Stat.MARKET_FEE))
+    return product_prices()[item_id] * (BP + bonus) / BP * (BP - fee_bp) / BP
+
+
+def animal_profit_per_hour(animal: AnimalDefinition, mods: ModifierSet) -> float:
+    """AGC por hora de um animal: produtos vendidos menos o valor da ração consumida."""
+    speed = mods.total_bp(Stat.ANIMAL_SPEED, animal.id)
+    yield_bp = mods.total_bp(Stat.ANIMAL_YIELD, animal.id)
+    efficiency = mods.total_bp(Stat.FEED_EFFICIENCY, animal.id)
+    produce_seconds = animal.produce_seconds * (BP + speed) / BP
+    revenue = 3600 / produce_seconds * (BP + yield_bp) / BP * _net_price(animal.product_item, mods)
+    feed_seconds = animal.feed_seconds * (BP + efficiency) / BP
+    feed_cost = 3600 / feed_seconds * product_prices()[animal.feed_item]
+    return revenue - feed_cost
+
+
+def best_animal_profit_per_hour(node_ids: Iterable[str]) -> float:
+    mods = modifiers_for_nodes(node_ids)
+    return max(animal_profit_per_hour(animal, mods) for animal in ANIMALS.values())
+
+
+def craft_profit_per_hour(recipe: RecipeDefinition, mods: ModifierSet) -> float:
+    """AGC por hora de uma vaga da estação (receita vendida menos os insumos gastos)."""
+    station = recipe.station
+    seconds = recipe.duration_seconds * (BP + mods.total_bp(Stat.PRODUCTION_TIME, station)) / BP
+    output = recipe.output_quantity * (BP + mods.total_bp(Stat.PRODUCTION_YIELD, station)) / BP
+    saving = mods.total_bp(Stat.PRODUCTION_SAVING, station) / BP
+    prices = product_prices()
+    inputs = sum(prices[item] * quantity for item, quantity in recipe.inputs.items()) * (1 - saving)
+    return (output * _net_price(recipe.output_item, mods) - inputs) * 3600 / seconds
+
+
+def best_craft_profit_per_hour(node_ids: Iterable[str]) -> float:
+    mods = modifiers_for_nodes(node_ids)
+    return max(craft_profit_per_hour(recipe, mods) for recipe in RECIPES.values())
 
 
 # Builds de referência no nível 50 (49 pontos), todas válidas pelas regras reais.
@@ -118,5 +160,56 @@ BUILDS: dict[str, list[str]] = {
         "com_rede_clientes",
         "hib_contratos_safra",
         "agro_mestre_terra",
+    ],
+}
+
+_PEC_CORE = [
+    "pec_pasto_verde",
+    "pec_cocho_farto",
+    "pec_manejo",
+    "pec_avicultor",
+    "pec_leiteiro",
+    "pec_pastor",
+    "pec_silagem",
+    "pec_genetica",
+    "pec_ordenha",
+    "pec_nutricao",
+    "pec_mestre_rebanho",
+    "pec_fazenda_modelo",
+]
+_IND_CORE = [
+    "ind_ferramentas",
+    "ind_aproveitamento",
+    "ind_boa_receita",
+    "ind_moleiro",
+    "ind_padeiro",
+    "ind_queijeiro",
+    "ind_estoque",
+    "ind_linha",
+    "ind_otimizacao",
+    "ind_qualidade",
+    "ind_mestre_eficiencia",
+    "ind_fabrica",
+]
+
+# Builds de produção animal e de fabricação no nível 50 (49 pontos).
+DOMAIN_BUILDS: dict[str, list[str]] = {
+    "pecuarista": [
+        *_PEC_CORE,
+        "com_regateio",
+        "com_balanca_justa",
+        "com_contatos",
+        "com_graos",
+        "com_hortalicas",
+        "hib_feira_pecuaria",
+    ],
+    "industrial": [
+        *_IND_CORE,
+        "pec_pasto_verde",
+        "pec_cocho_farto",
+        "pec_manejo",
+        "pec_avicultor",
+        "pec_leiteiro",
+        "hib_laticinios",
     ],
 }

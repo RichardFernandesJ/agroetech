@@ -225,7 +225,7 @@ async def test_chain_milho_to_pao_and_sell(
         json={"item_id": "processed_pao", "quantity": 3},
     )
     assert sold.status_code == 200, sold.text
-    assert (sold.json()["gross"], sold.json()["fee"]) == (66, 3)
+    assert (sold.json()["gross"], sold.json()["fee"]) == (120, 6)
 
 
 async def test_station_upgrades_add_slots_and_speed(

@@ -234,9 +234,10 @@ Um animal por linha. A produção é derivada dos timestamps (sem processo por j
 | `fed_until` | TIMESTAMPTZ | até quando está alimentado (nulo = nunca) |
 | `last_sync_at` | TIMESTAMPTZ | última contabilização da produção |
 | `progress_seconds` | FLOAT | segundos alimentados rumo ao próximo produto, `>= 0` |
+| `speed_bp` / `yield_bp` | INTEGER | bônus de talentos gravados ao alimentar com fome (pontos-base) |
 | `stored` | INTEGER | produtos prontos para coleta, `>= 0` |
 
-Migração: `0007_animals`.
+Migrações: `0007_animals` e `0009_animal_modifiers`.
 
 ### `production_jobs`
 

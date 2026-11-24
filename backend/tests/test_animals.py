@@ -221,15 +221,15 @@ async def test_feeding_consumes_feed_and_caps_at_the_buffer(
     assert fed.status_code == 200, fed.text
     assert fed.json()["units_fed"] == {"crop_milho": 2}
     animal = fed.json()["animals"][0]
-    assert animal["is_fed"] and 3500 < animal["fed_seconds_left"] <= 3600
+    assert animal["is_fed"] and 4100 < animal["fed_seconds_left"] <= 4200  # 2 porções de 35 min
     assert (await inventory_quantities(client, property_id, auth_headers))["crop_milho"] == 28
 
-    # Pede muito: só entram as porções até o teto de 8 h (16 porções no total).
+    # Pede muito: só entram as porções até o teto de 8 h (13 porções de 35 min no total).
     big = await client.post(
         _url(property_id, f"/{animal_id}/feed"), headers=auth_headers, json={"units": 64}
     )
     assert big.status_code == 200
-    assert (await inventory_quantities(client, property_id, auth_headers))["crop_milho"] == 28 - 14
+    assert (await inventory_quantities(client, property_id, auth_headers))["crop_milho"] == 28 - 11
 
     full = await client.post(
         _url(property_id, f"/{animal_id}/feed"), headers=auth_headers, json={"units": 1}
@@ -339,8 +339,8 @@ async def test_products_sell_at_the_market_with_fee(
     )
     assert response.status_code == 200, response.text
     body = response.json()
-    assert (body["gross"], body["fee"], body["amount"]) == (40, 2, 38)
-    assert await _balance(client, auth_headers) == before + 38
+    assert (body["gross"], body["fee"], body["amount"]) == (50, 2, 48)
+    assert await _balance(client, auth_headers) == before + 48
 
     offers = (await client.get("/api/v1/market/offers", headers=auth_headers)).json()["offers"]
     assert {"animal_ovo", "animal_leite", "animal_la"} <= {o["item_id"] for o in offers}

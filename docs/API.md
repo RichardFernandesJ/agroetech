@@ -395,17 +395,34 @@ construção desconhecida ou fazenda de outro jogador. O efeito dos talhões val
 Cada jogador pode ter **uma** fazenda (`409` na segunda) e ela sempre começa com 6
 talhões (`plot_count` maior que 6 retorna `422`). Mais talhões só pela Casa da Fazenda.
 
+### Talentos de Pecuária e Indústria
+
+Os ramos **Pecuária** e **Indústria** estão ativos (catálogo com 55 talentos). Os efeitos
+valem assim:
+
+- **Animais** (`animal_yield`, `animal_speed`, `feed_efficiency`, com escopo por espécie):
+  a velocidade e o rendimento ficam gravados no animal **quando ele é alimentado com
+  fome** e valem enquanto durar a ração acumulada; a eficiência da ração vale no ato de
+  alimentar. Trocar de build não altera a produção em curso. O rendimento aplica-se na
+  coleta (sorteio determinístico). O estoque do animal acompanha a velocidade (8 h).
+- **Fabricação** (`production_time`, `production_yield`, `production_saving`, com escopo por
+  estação): valem no início do trabalho; `production_saving` é a chance, por lote, de os
+  insumos serem devolvidos.
+- **Mercado:** os bônus de preço têm escopo por cultura, animal (ovo, leite, lã) ou
+  processado (farinha, pão, bolo, queijo, manteiga).
+
 ### Animais (Fase 5)
 
 Animais só produzem enquanto **alimentados**. Cada porção de ração (uma safra do
-inventário) mantém o animal alimentado por 30 minutos; a ração acumulada tem teto de
-8 horas, e o estoque de produtos do animal guarda no máximo o equivalente a 8 horas.
+inventário) mantém o animal alimentado por 35 minutos; a ração acumulada tem teto de
+8 horas (13 porções), e o estoque de produtos do animal guarda no máximo o equivalente a
+8 horas.
 Assim a produção offline é determinística e limitada (nada de acumular por dias).
 Conteúdo em `backend/app/game/animals.py`.
 
 | Espécie | Abrigo | Preço | Nível | Produto (a cada) | Valor | Ração |
 |---|---|---:|---:|---|---:|---|
-| Galinha | Galinheiro | 60 | 2 | Ovo (15 min) | 4 | Milho |
+| Galinha | Galinheiro | 60 | 2 | Ovo (15 min) | 5 | Milho |
 | Vaca | Estábulo | 300 | 5 | Leite (20 min) | 9 | Cenoura |
 | Ovelha | Estábulo | 220 | 7 | Lã (40 min) | 14 | Milho |
 
@@ -415,7 +432,8 @@ vendidos no mercado como qualquer produto (com bônus de preço e taxa dos talen
 #### GET `/api/v1/properties/{property_id}/animals` 🔒
 
 Contabiliza a produção até agora e devolve: `animals` (`stored`, `max_stored`,
-`is_fed`, `fed_seconds_left`, `seconds_to_next`), `housings` (`capacity`/`used` por
+`is_fed`, `fed_seconds_left`, `seconds_to_next`, `produce_seconds` e `yield_bonus_bp` já
+com os talentos), `housings` (`capacity`/`used` por
 abrigo) e `species` (preço, nível, `can_buy` e `blocked_reason`), além de `balance` e
 `player_level`.
 
@@ -446,11 +464,11 @@ Conteúdo em `backend/app/game/recipes.py`.
 
 | Receita | Estação | Insumos (por lote) | Resultado | Tempo | Nível |
 |---|---|---|---|---:|---:|
-| Farinha de milho | Moinho | 3 milho | 1 farinha (24 AGC) | 10 min | 3 |
-| Pão | Padaria | 2 farinha + 1 ovo | 3 pães (22 AGC) | 15 min | 5 |
-| Bolo | Padaria | 2 farinha + 2 ovos + 1 leite | 1 bolo (90 AGC) | 30 min | 9 |
-| Queijo | Queijaria | 3 leite | 1 queijo (42 AGC) | 20 min | 6 |
-| Manteiga | Queijaria | 2 leite | 1 manteiga (26 AGC) | 10 min | 6 |
+| Farinha de milho | Moinho | 3 milho | 1 farinha (30 AGC) | 10 min | 3 |
+| Pão | Padaria | 2 farinha + 1 ovo | 3 pães (40 AGC) | 15 min | 5 |
+| Bolo | Padaria | 2 farinha + 2 ovos + 1 leite | 1 bolo (150 AGC) | 30 min | 9 |
+| Queijo | Queijaria | 3 leite | 1 queijo (52 AGC) | 20 min | 6 |
+| Manteiga | Queijaria | 2 leite | 1 manteiga (34 AGC) | 10 min | 6 |
 
 Os produtos processados (`processed_*`) vão para o inventário e vendem no mercado.
 

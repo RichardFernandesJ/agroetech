@@ -39,6 +39,8 @@ def _to_read(state: CraftingState) -> CraftingStateRead:
             job_slots=view.job_slots,
             used_slots=view.used_slots,
             time_bonus_bp=view.time_bonus_bp,
+            yield_bonus_bp=view.yield_bonus_bp,
+            saving_bp=view.saving_bp,
             jobs=[
                 JobRead(
                     id=job.job.id,

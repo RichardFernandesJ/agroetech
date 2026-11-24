@@ -37,6 +37,10 @@ correspondente existir; um teste impede talentos para estatísticas não impleme
 | `market_fee` | taxa de venda | mínimo 1% |
 | `production_time` | tempo de fabricação (escopo: estação) | −25% |
 | `production_yield` | rendimento da fabricação | +30% |
+| `production_saving` | chance de um lote não gastar insumos | 25% |
+| `animal_yield` | produtos dos animais (escopo: espécie) | +30% |
+| `animal_speed` | tempo de produção dos animais | −25% |
+| `feed_efficiency` | rendimento da ração | +30% |
 
 Regras:
 
@@ -69,8 +73,8 @@ Híbridos propostos: contratos de safra (Agricultura + Comércio), laticínios
 (Pecuária + Indústria), botânico (Exploração + Agricultura), rotas protegidas
 (Estratégia + Comércio), cães de guarda (Defesa + Pecuária).
 
-**Escopo de lançamento:** só Agricultura e Comércio têm efeito. Os demais ramos
-aparecem bloqueados e marcados "em breve" até suas mecânicas existirem.
+**Escopo atual:** Agricultura, Comércio, Pecuária e Indústria têm efeito. Exploração e
+Estratégia aparecem bloqueadas ("em breve") até suas mecânicas existirem.
 
 ## 4. Dados
 
@@ -184,4 +188,26 @@ confrontos repetidos; nível mínimo 10 para disputas; bônus de reconstrução.
 - Layout responsivo: em telas estreitas o painel lateral vai para baixo do mapa.
 - Cobertura: E2E `frontend/e2e/talents.spec.ts` (mapa com 27 nós, detalhes,
   requisito bloqueado, aquisição, pontos, criação de preset e fechamento).
+
+## 13. Estado dos ramos Pecuária e Indústria (implementados)
+
+- **Pecuária (13 talentos):** Pasto Verde, Cocho Farto, Manejo Gentil; especialistas por
+  espécie (Avicultor, Leiteiro, Pastor) e Silagem; Genética, Ordenha e Nutrição; masters
+  Rebanho (produtos) e Manejo (tempo), exclusivos; lendário Fazenda Modelo.
+- **Indústria (13 talentos):** Ferramentas, Aproveitamento, Boa Receita; especialistas por
+  estação (Moleiro, Padeiro, Queijeiro) e Estoque; Linha de Produção, Otimização e Controle de
+  Qualidade; masters Eficiência (lote grátis) e Volume (rendimento), exclusivos; lendário
+  Fábrica Lendária.
+- **Híbridos:** *Laticínios* (Pecuária + Indústria: leite, queijo e manteiga +8% no preço) e
+  *Feira de Produtos* (Comércio + Pecuária: ovos, leite e lã +8%). Exigem 6 pontos em cada ramo.
+- **Sem efeito retroativo:** o plantio, a fabricação e agora o animal gravam os bônus ao
+  começar (o animal, ao ser alimentado com fome). Trocar de build só afeta o que vier depois.
+- **Paridade (simulador):** como animais e fabricação têm margem fina, qualquer bônus
+  percentual rende muito mais ali. Para o Comércio não virar o melhor industrial, as margens
+  foram elevadas (ração rende 35 min por porção; produtos processados valem mais) e o teste
+  `test_each_specialist_wins_its_own_domain_without_being_overpowered` exige que: cada
+  especialista fique entre 1,8× e 2,4× no próprio domínio; vença qualquer outra build de
+  referência ali em pelo menos 5%; e a diferença entre especialistas fique em até 20%.
+  Hoje: agricultor 1,96×, pecuarista 2,25× e industrial 2,28× (Comércio: 1,81× em lavoura,
+  1,77× em animais e 2,07× em fabricação).
 

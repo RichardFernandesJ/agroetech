@@ -14,7 +14,7 @@ from app.core.exceptions import GameRuleError, NotFoundError
 from app.core.time import ensure_utc, utcnow
 from app.game.buildings import BUILDINGS, BuildingDefinition, get_building
 from app.game.catalog import get_item
-from app.game.modifiers import Stat, scale, scaled_seconds, seeded_rng
+from app.game.modifiers import Stat, free_batches, scale, scaled_seconds, seeded_rng
 from app.game.recipes import MAX_BATCHES, RECIPES, RecipeDefinition, get_recipe
 from app.models.production_job import ProductionJob
 from app.models.property import Property
@@ -44,6 +44,8 @@ class StationView:
     job_slots: int
     used_slots: int
     time_bonus_bp: int
+    yield_bonus_bp: int
+    saving_bp: int
     jobs: list[JobView]
 
 
@@ -153,8 +155,17 @@ class CraftingService:
         job_id = uuid.uuid4()
         rng = seeded_rng("craft", job_id)
         output = scale(
-            recipe.output_quantity * batches, modifiers.total_bp(Stat.PRODUCTION_YIELD), rng
+            recipe.output_quantity * batches,
+            modifiers.total_bp(Stat.PRODUCTION_YIELD, recipe.station),
+            rng,
         )
+        # Aproveitamento: alguns lotes saem sem gastar insumos (devolvidos ao inventário).
+        free = free_batches(
+            batches, modifiers.total_bp(Stat.PRODUCTION_SAVING, recipe.station), rng
+        )
+        if free:
+            for item_id, per_batch in recipe.inputs.items():
+                await self.inventory.add(property_.id, item_id, per_batch * free)
         seconds = scaled_seconds(
             recipe.duration_seconds * batches,
             modifiers.total_bp(Stat.PRODUCTION_TIME, recipe.station),
@@ -260,6 +271,8 @@ class CraftingService:
                     job_slots=slots,
                     used_slots=len(jobs),
                     time_bonus_bp=modifiers.total_bp(Stat.PRODUCTION_TIME, station_id),
+                    yield_bonus_bp=modifiers.total_bp(Stat.PRODUCTION_YIELD, station_id),
+                    saving_bp=modifiers.total_bp(Stat.PRODUCTION_SAVING, station_id),
                     jobs=views,
                 )
             )

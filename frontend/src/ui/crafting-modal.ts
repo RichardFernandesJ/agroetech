@@ -175,8 +175,12 @@ export class CraftingModal {
 
   private stationCard(station: Station, recipes: Recipe[]): string {
     const built = station.job_slots > 0;
-    const speed =
-      station.time_bonus_bp < 0 ? ` · ${Math.abs(station.time_bonus_bp) / 100}% mais rápido` : "";
+    const perks = [
+      station.time_bonus_bp < 0 ? `${Math.abs(station.time_bonus_bp) / 100}% mais rápido` : "",
+      station.yield_bonus_bp > 0 ? `+${station.yield_bonus_bp / 100}% rendimento` : "",
+      station.saving_bp > 0 ? `${station.saving_bp / 100}% de lote grátis` : "",
+    ].filter(Boolean);
+    const speed = perks.length > 0 ? ` · ${perks.join(" · ")}` : "";
     const jobs = station.jobs.map((job) => this.jobRow(job)).join("");
     const mine = recipes.filter((recipe) => recipe.station === station.building_id);
     return `

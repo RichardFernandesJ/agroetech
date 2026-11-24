@@ -37,17 +37,17 @@ class ProcessedItem:
 
 PROCESSED_ITEMS: dict[str, ProcessedItem] = {
     "processed_farinha": ProcessedItem(
-        "processed_farinha", "Farinha de milho", "Farinha moída na hora no moinho.", 24
+        "processed_farinha", "Farinha de milho", "Farinha moída na hora no moinho.", 30
     ),
-    "processed_pao": ProcessedItem("processed_pao", "Pão", "Pão quentinho de forno a lenha.", 22),
+    "processed_pao": ProcessedItem("processed_pao", "Pão", "Pão quentinho de forno a lenha.", 40),
     "processed_bolo": ProcessedItem(
-        "processed_bolo", "Bolo", "Bolo caseiro com ovos, leite e farinha.", 90
+        "processed_bolo", "Bolo", "Bolo caseiro com ovos, leite e farinha.", 150
     ),
     "processed_queijo": ProcessedItem(
-        "processed_queijo", "Queijo", "Queijo curado da queijaria da ilha.", 42
+        "processed_queijo", "Queijo", "Queijo curado da queijaria da ilha.", 52
     ),
     "processed_manteiga": ProcessedItem(
-        "processed_manteiga", "Manteiga", "Manteiga fresca batida à mão.", 26
+        "processed_manteiga", "Manteiga", "Manteiga fresca batida à mão.", 34
     ),
 }
 

@@ -31,8 +31,16 @@ test("árvore de talentos: mapa, aquisição e presets", async ({ page }) => {
   // Abre o mapa pelo menu do HUD (só cliques).
   await page.locator('[data-menu="talents"]').click();
   await expect(page.locator(".talent-modal")).toBeVisible();
-  await expect(page.locator(".talent-node")).toHaveCount(27);
+  await expect(page.locator(".talent-node")).toHaveCount(55);
   await expect(page.locator(".talent-points-value")).toHaveText("9");
+
+  // Os ramos de Pecuária e Indústria agora têm talentos de verdade.
+  await page.locator('[data-id="pec_pasto_verde"]').click();
+  await expect(page.locator(".talent-sidebar h3")).toHaveText("Pasto Verde");
+  await expect(page.locator(".talent-effects")).toContainText("Produtos dos animais +2%");
+  await page.locator('[data-id="ind_moleiro"]').click();
+  await expect(page.locator(".talent-effects")).toContainText("Moinho: Tempo de fabricação −5%");
+  await expect(page.locator(".branch-chip.soon")).toHaveCount(2);
 
   // Detalhes ao clicar no talento.
   const node = page.locator('[data-id="agro_solo_fertil"]');

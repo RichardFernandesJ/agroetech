@@ -292,3 +292,24 @@ determinística e proteção contra duplicação.
 **Consequências:** O ramo Indústria dos talentos só precisa declarar efeitos em
 `production_time`/`production_yield`. O ganho de valor das receitas é uma nova fonte de
 moeda (limitada por insumos, vagas e tempo) a rever com dados reais antes do multiplayer.
+
+## ADR-019 — Bônus de animais gravados ao alimentar e paridade por domínio
+
+**Contexto:** Com Pecuária e Indústria, os talentos passam a afetar a produção contínua
+dos animais. O ADR-017 deixou em aberto como evitar efeito retroativo ao trocar de build.
+
+**Decisão:**
+1. O animal grava `speed_bp` e `yield_bp` quando é alimentado **estando com fome** (começo de
+   uma rodada de produção) e os mantém até a ração acabar. Alimentar de novo com ração
+   sobrando não muda nada; a eficiência da ração vale no ato de alimentar.
+2. O estoque do animal acompanha a velocidade (8 h de produção), para o bônus de tempo não
+   desperdiçar produtos. O rendimento aplica-se na coleta, com sorteio determinístico.
+3. Na fabricação, o lote grátis (`production_saving`) devolve os insumos depois de consumi-los,
+   evitando que alguém "ensaie" lotes sem ter os insumos.
+4. Paridade é medida por domínio: o simulador compara cada especialista com o melhor
+   "intruso" no mesmo domínio. Domínios de margem fina amplificam bônus percentuais; por
+   isso as margens dos produtos foram elevadas em vez de reduzir os talentos a quase nada.
+
+**Consequências:** Novos ramos (Exploração, Estratégia) só precisam declarar efeitos e, se
+tiverem produção contínua, seguir o mesmo padrão de gravar o bônus no início. O simulador
+precisa ganhar um domínio novo a cada mecânica econômica nova.

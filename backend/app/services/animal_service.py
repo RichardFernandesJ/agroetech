@@ -5,6 +5,7 @@ processo roda por jogador). Compra e coleta são atômicas; a compra é
 idempotente por ``Idempotency-Key`` e usa a mesma carteira travada do mercado.
 """
 
+import math
 import uuid
 from dataclasses import dataclass, field
 
@@ -14,7 +15,7 @@ from app.game import animals as rules
 from app.game.animals import ANIMALS, AnimalDefinition, get_animal
 from app.game.buildings import BUILDINGS, get_building
 from app.game.catalog import get_item
-from app.game.modifiers import Stat, scale, seeded_rng
+from app.game.modifiers import BP, Stat, scale, scaled_seconds, seeded_rng
 from app.models.animal import Animal
 from app.models.property import Property
 from app.models.user import User
@@ -36,6 +37,9 @@ class AnimalView:
     definition: AnimalDefinition
     fed_seconds_left: int
     seconds_to_next: int | None
+    produce_seconds: int  # já com o bônus de velocidade do animal
+    max_stored: int
+    yield_bp: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +71,15 @@ class AnimalsState:
     products: dict[str, int] = field(default_factory=dict)
     units_fed: dict[str, int] = field(default_factory=dict)
     xp_gained: int = 0
+
+
+def effective_produce_seconds(definition: AnimalDefinition, row: Animal) -> int:
+    return scaled_seconds(definition.produce_seconds, row.speed_bp)
+
+
+def effective_max_stored(definition: AnimalDefinition, row: Animal) -> int:
+    """O estoque acompanha a velocidade: 8 h de produção, mesmo mais rápida."""
+    return math.ceil(definition.max_feed_seconds / effective_produce_seconds(definition, row))
 
 
 class AnimalService:
@@ -160,6 +173,7 @@ class AnimalService:
             raise GameRuleError("Você ainda não tem animais.")
 
         now = utcnow()
+        modifiers = await self.modifiers.for_property(user.id, property_.id)
         fed: dict[str, int] = {}
         out_of_feed = False
         for row in targets:
@@ -176,11 +190,18 @@ class AnimalService:
                 now=now,
                 fed_until=row.fed_until,
                 units=min(units, available),
-                feed_seconds=definition.feed_seconds,
+                feed_seconds=definition.feed_seconds
+                * (BP + modifiers.total_bp(Stat.FEED_EFFICIENCY, row.species))
+                // BP,
                 max_feed_seconds=definition.max_feed_seconds,
             )
             if result.units_used == 0:
                 continue
+            hungry = row.fed_until is None or ensure_utc(row.fed_until) <= now
+            if hungry:
+                # Nova rodada de produção: grava os bônus vigentes agora.
+                row.speed_bp = modifiers.total_bp(Stat.ANIMAL_SPEED, row.species)
+                row.yield_bp = modifiers.total_bp(Stat.ANIMAL_YIELD, row.species)
             await self.inventory.consume(
                 property_.id,
                 definition.feed_item,
@@ -211,9 +232,9 @@ class AnimalService:
             if row.stored <= 0:
                 continue
             definition = ANIMALS[row.species]
-            products[definition.product_item] = (
-                products.get(definition.product_item, 0) + row.stored
-            )
+            rng = seeded_rng("animal-collect", row.id, row.stored, int(row.progress_seconds))
+            quantity = scale(row.stored, row.yield_bp, rng)
+            products[definition.product_item] = products.get(definition.product_item, 0) + quantity
             base_xp += row.stored * definition.xp_per_product
             row.stored = 0
 
@@ -247,8 +268,8 @@ class AnimalService:
                 fed_until=row.fed_until,
                 progress_seconds=row.progress_seconds,
                 stored=row.stored,
-                produce_seconds=definition.produce_seconds,
-                max_stored=definition.max_stored,
+                produce_seconds=effective_produce_seconds(definition, row),
+                max_stored=effective_max_stored(definition, row),
             )
             row.progress_seconds = result.progress_seconds
             row.stored = result.stored
@@ -302,10 +323,12 @@ class AnimalService:
             fed_left = 0
             if row.fed_until is not None:
                 fed_left = max(0, int((ensure_utc(row.fed_until) - now).total_seconds()))
+            produce = effective_produce_seconds(definition, row)
+            cap = effective_max_stored(definition, row)
             to_next: int | None = None
-            if fed_left > 0 and row.stored < definition.max_stored:
-                to_next = max(1, int(definition.produce_seconds - row.progress_seconds))
-            views.append(AnimalView(row, definition, fed_left, to_next))
+            if fed_left > 0 and row.stored < cap:
+                to_next = max(1, int(produce - row.progress_seconds))
+            views.append(AnimalView(row, definition, fed_left, to_next, produce, cap, row.yield_bp))
 
         housings: list[HousingView] = []
         for building_id, cap in capacity.items():

@@ -11,6 +11,22 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.10.0] — 2026-11-23
+
+### Adicionado
+
+- **Ramos Pecuária e Indústria da árvore de talentos:** 26 talentos novos (55 no total), com especialistas por espécie e por estação, masters exclusivos e lendários, e os híbridos *Laticínios* e *Feira de Produtos*.
+- Estatísticas novas no motor de modificadores: `animal_yield`, `animal_speed`, `feed_efficiency` (escopo por espécie) e `production_saving` (lote grátis); `production_time`/`production_yield` passam a valer por estação.
+- Bônus de preço com escopo por produto (ovo, leite, lã, farinha, pão, bolo, queijo, manteiga) via `sell_scope_for_item`.
+- Animais gravam velocidade e rendimento (`speed_bp`, `yield_bp`, migração `0009`) quando alimentados com fome: sem efeito retroativo ao trocar de build.
+- Painéis de animais e fabricação mostram os bônus ativos.
+- Simulador de paridade por domínio (lavoura, animais, fabricação) e 11 testes novos (165 no total).
+
+### Alterado
+
+- **Rebalanceamento da economia** para que bônus percentuais não distorçam os domínios de margem fina: ração rende 35 min por porção; ovo vale 5 AGC; farinha 30, pão 40, bolo 150, queijo 52 e manteiga 34 AGC.
+- Validação do catálogo de talentos reconhece escopos de culturas, espécies, produtos e estações.
+
 ## [0.9.0] — 2026-11-23
 
 ### Adicionado

@@ -70,3 +70,13 @@ def test_scale_keeps_integer_part_and_averages_to_exact_value() -> None:
 def test_roll_respects_extremes() -> None:
     assert not roll(0, seeded_rng("a"))
     assert all(roll(BP + 1, seeded_rng("a", n)) for n in range(20))
+
+
+def test_free_batches_extremes_and_distribution() -> None:
+    from app.game.modifiers import free_batches
+
+    assert free_batches(10, 0, seeded_rng("a")) == 0
+    assert free_batches(10, BP + 1, seeded_rng("a")) == 10
+    total = sum(free_batches(10, 2_000, seeded_rng("lote", n)) for n in range(1_000))
+    assert abs(total / 1_000 - 2.0) < 0.2  # 20% de 10 lotes
+    assert free_batches(24, 1_500, seeded_rng("x")) == free_batches(24, 1_500, seeded_rng("x"))

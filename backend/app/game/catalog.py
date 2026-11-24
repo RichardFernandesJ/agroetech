@@ -161,5 +161,15 @@ def crop_id_for_item(item_id: str) -> str | None:
     return crop_id if crop_id in CROPS else None
 
 
+def sell_scope_for_item(item_id: str) -> str | None:
+    """Escopo do bônus de preço: a cultura (``milho``) ou o produto (``leite``, ``pao``)."""
+    prefix, _, key = item_id.partition("_")
+    if prefix == "crop":
+        return key if key in CROPS else None
+    if prefix in ("animal", "processed"):
+        return key or None
+    return None
+
+
 def get_item(item_id: str) -> ItemDefinition | None:
     return ITEM_CATALOG.get(item_id)

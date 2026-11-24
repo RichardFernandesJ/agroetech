@@ -8,6 +8,9 @@ export interface Animal {
   product_name: string;
   stored: number;
   max_stored: number;
+  /** Tempo por produto e bônus de produção vigentes neste animal (talentos). */
+  produce_seconds: number;
+  yield_bonus_bp: number;
   is_fed: boolean;
   fed_seconds_left: number;
   /** Segundos até o próximo produto (null se está com fome ou com o estoque cheio). */

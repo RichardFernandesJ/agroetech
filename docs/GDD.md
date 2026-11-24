@@ -167,12 +167,12 @@ como o gestor supremo da fazenda:
   entram só com novas linhas no catálogo.
 - Cada animal precisa de **abrigo** (Galinheiro ou Estábulo, que se melhoram na tela de
   Construções) com vaga, de nível de jogador e de AGC.
-- **Alimentação:** as safras do inventário são a ração (milho ou cenoura). 1 porção = 30
-  min de comida; o acúmulo máximo é de 8 h. Sem comida, o animal para de produzir.
+- **Alimentação:** as safras do inventário são a ração (milho ou cenoura). 1 porção = 35
+  min de comida; o acúmulo máximo é de 8 h (13 porções). Sem comida, o animal para de produzir.
 - **Produção offline determinística:** o servidor soma o tempo alimentado; cada animal
   guarda até 8 h de produtos. Coletar é por clique (**Coletar tudo**) e rende XP.
-- **Economia:** a ração vira produto de maior valor (1,6× a 2,3× do custo) e o animal se
-  paga em 10 a 20 horas de produção. Os produtos vendem no entreposto como qualquer safra.
+- **Economia:** a ração vira produto de maior valor (2,3× a 2,6× do custo) e o animal se
+  paga em 5 a 18 horas de produção. Os produtos vendem no entreposto como qualquer safra.
 - Interface: botão **🐔 Animais** ou clique no **Curral** do mapa; alimentar por ×1, ×4 e Máx.
 
 ## 6.3 Fabricação
@@ -180,8 +180,8 @@ como o gestor supremo da fazenda:
 - Três estações (Moinho, Padaria, Queijaria), construídas e melhoradas na tela de
   Construções. Cada nível dá **mais uma vaga** de produção; os níveis 2 e 3 também
   aceleram a estação (−5% e −10% de tempo).
-- Receitas transformam safras e produtos animais em itens de maior valor (ganho de 1,2× a
-  1,6× sobre os insumos): farinha → pão e bolo; leite → queijo e manteiga.
+- Receitas transformam safras e produtos animais em itens de maior valor (ganho de 1,4× a
+  2,0× sobre os insumos): farinha → pão e bolo; leite → queijo e manteiga.
 - Um trabalho ocupa uma vaga até ser **coletado** (mesmo depois de pronto), e o jogador
   escolhe de 1 a 24 lotes de uma vez. Funciona offline: o servidor só compara horários.
 - Insumos saem do inventário ao iniciar. Os produtos processados vendem no mercado e dão XP.

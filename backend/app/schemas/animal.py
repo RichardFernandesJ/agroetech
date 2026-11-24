@@ -14,6 +14,9 @@ class AnimalRead(BaseModel):
     product_name: str
     stored: int
     max_stored: int
+    # Tempo por produto e bônus de produção vigentes neste animal (talentos).
+    produce_seconds: int
+    yield_bonus_bp: int
     is_fed: bool
     fed_seconds_left: int
     # Segundos até o próximo produto (None se está com fome ou com o estoque cheio).
