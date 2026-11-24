@@ -135,7 +135,6 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 ## Pendências técnicas
 
-- Dividir `FarmScene.ts` (≈650 linhas): extrair renderização dos talhões e interações do mundo.
 - Painel de criação de personagem ainda tem campos de avatar (tom de pele, cabelo, roupa).
 - Ampliar E2E Playwright: plantio e colheita pela UI (hoje cobre cadastro, perfil, HUD e sessão).
 - Pasta `workers/` do backend (necessária a partir da Fase 5).
@@ -147,5 +146,4 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 
 **Fase 5, animais:** estruturas de criação (galinheiro, estábulo) como construções do
 catálogo, animais com alimentação e produção offline determinística, reaproveitando
-`buildings`, `ModifierService`, `ModalManager` e o menu do HUD. Antes, dividir a
-`FarmScene` (≈700 linhas) para a cena não crescer mais.
+`buildings`, `ModifierService`, `ModalManager` e o menu do HUD. A `FarmScene` já foi dividida em módulos.

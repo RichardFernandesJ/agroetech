@@ -26,6 +26,8 @@ export class Hud {
   private readonly nameElement: HTMLHeadingElement;
   private readonly farmElement: HTMLParagraphElement;
   private readonly balanceElement: HTMLParagraphElement;
+  private readonly menuElement: HTMLElement;
+  private menuItems: HudMenuItem[] = [];
   private readonly levelLabel: HTMLSpanElement;
   private readonly levelFill: HTMLDivElement;
   private readonly promptElement: HTMLDivElement;
@@ -63,7 +65,7 @@ export class Hud {
     this.balanceElement.title = "Abrir o mercado";
     this.balanceElement.textContent = "🪙 — AGC";
     this.balanceElement.addEventListener("click", () =>
-      actions?.menu?.find((item) => item.id === "market")?.onClick(),
+      this.menuItems.find((item) => item.id === "market")?.onClick(),
     );
 
     // Nível e barra de experiência.
@@ -141,21 +143,12 @@ export class Hud {
     this.toastElement.hidden = true;
 
     // Menu principal: um botão por sistema (mercado, talentos, ...).
-    const menu = document.createElement("nav");
-    menu.className = "hud-menu";
-    menu.setAttribute("aria-label", "Menu do jogo");
-    for (const item of actions?.menu ?? []) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "hud-btn hud-menu-btn";
-      button.dataset.menu = item.id;
-      button.title = item.title;
-      button.textContent = item.label;
-      button.addEventListener("click", item.onClick);
-      menu.append(button);
-    }
+    this.menuElement = document.createElement("nav");
+    this.menuElement.className = "hud-menu";
+    this.menuElement.setAttribute("aria-label", "Menu do jogo");
+    this.setMenu(actions?.menu ?? []);
 
-    this.root.append(card, hint, menu, cameraControls, this.promptElement, this.toastElement);
+    this.root.append(card, hint, this.menuElement, cameraControls, this.promptElement, this.toastElement);
 
     const layer = document.getElementById("ui-layer");
     (layer ?? document.body).append(this.root);
@@ -163,6 +156,22 @@ export class Hud {
 
   setFarm(name: string, plotCount: number): void {
     this.farmElement.textContent = `${name} · ${plotCount} talhões`;
+  }
+
+  /** Define os atalhos do menu principal (pode ser chamado depois da criação). */
+  setMenu(items: HudMenuItem[]): void {
+    this.menuItems = items;
+    this.menuElement.replaceChildren();
+    for (const item of items) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "hud-btn hud-menu-btn";
+      button.dataset.menu = item.id;
+      button.title = item.title;
+      button.textContent = item.label;
+      button.addEventListener("click", item.onClick);
+      this.menuElement.append(button);
+    }
   }
 
   setProgress(progress: {

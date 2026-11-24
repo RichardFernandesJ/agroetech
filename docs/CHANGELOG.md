@@ -11,6 +11,17 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.7.1] — 2026-11-23
+
+### Alterado
+
+- **`FarmScene` dividida:** de 735 para 107 linhas. Responsabilidades em `game/scenes/farm/` (`CameraController`, `PlotRenderer`, `FarmController`, `FarmPanels`, `world-interactions`, `FarmState`), sem mudança de comportamento.
+- `Hud.setMenu()` permite definir o menu depois da criação.
+
+### Adicionado
+
+- E2E de plantio por clique direto no talhão do mapa (`e2e/plant-flow.spec.ts`).
+
 ## [0.7.0] — 2026-11-23
 
 ### Adicionado
