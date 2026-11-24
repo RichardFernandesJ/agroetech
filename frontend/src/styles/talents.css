@@ -598,3 +598,108 @@
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Painel de construções                                               */
+/* ------------------------------------------------------------------ */
+
+.buildings-panel {
+  width: min(680px, 100%);
+}
+
+.buildings-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.building-card {
+  padding: 14px 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(6, 14, 9, 0.6);
+}
+
+.building-card.focused {
+  border-color: var(--gold-strong);
+  box-shadow: 0 0 0 1px rgba(232, 205, 134, 0.35);
+}
+
+.building-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.building-head h3 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 19px;
+  color: var(--cream);
+}
+
+.building-head small,
+.building-now span {
+  color: var(--gold);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+}
+
+.building-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(217, 185, 106, 0.12);
+  font-size: 24px;
+}
+
+.building-desc,
+.building-now,
+.building-next p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.building-now { color: var(--cream); }
+
+.building-next {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--panel-border);
+}
+
+.building-next-title {
+  color: var(--gold) !important;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.building-cost strong { color: var(--gold-strong); }
+
+.building-upgrade {
+  margin-top: 10px;
+}
+
+.building-blocked {
+  color: var(--danger) !important;
+}
+
+.building-max {
+  margin: 12px 0 0;
+  color: #8fd694;
+  font-size: 13px;
+}
+
+/* Painéis mais altos que a janela rolam a partir do topo (em vez de cortar o cabeçalho). */
+.overlay > .panel {
+  margin: auto;
+}
+
+.building-card { padding: 12px 14px; }
+.building-desc, .building-now, .building-next p { margin-top: 5px; }

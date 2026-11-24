@@ -150,6 +150,17 @@ como o gestor supremo da fazenda:
 - Fontes de moeda devem ter sumidouros equivalentes (sementes, construções,
   taxas, melhorias) para evitar inflação.
 
+## 6.1 Construções e expansão de terreno
+
+- **Casa da Fazenda:** cada melhoria abre mais talhões (6 → 8 → 10 → 12), custando
+  150, 400 e 900 AGC e exigindo nível de jogador 3, 8 e 15. Os talhões novos aparecem
+  no mapa a leste, em colunas de dois, e a cerca acompanha.
+- **Poço da Ilha:** irrigação. Cada nível reduz o tempo de crescimento (−2%, −4%, −6%)
+  por 60, 200 e 500 AGC (jogador nível 2, 6 e 12). Soma com os talentos pelo motor de
+  modificadores (teto total de −25%).
+- Cada jogador tem uma fazenda. Todas as melhorias são pagas pelo servidor, atômicas e
+  idempotentes. Toda a interação é por clique (menu **🏗️ Construções**, a Casa ou o Poço).
+
 ## 7. Progressão
 
 **Implementado:** XP e nível (1 a 50) por jogador. Plantar rende 2 XP; colher rende

@@ -2,6 +2,7 @@ import Phaser from "phaser";
 
 import {
   BOAT,
+  BASE_PLOTS,
   FENCE,
   HOUSE,
   INLAND_TREES,
@@ -17,6 +18,7 @@ import {
   WORLD_HEIGHT,
   WORLD_WIDTH,
   getIslandTile,
+  fenceRightFor,
   isDecorBlocked,
 } from "./map";
 
@@ -32,6 +34,8 @@ export interface WorldObjectInteractable {
 export interface WorldBuild {
   interactables: WorldObjectInteractable[];
   plotSprites: Phaser.GameObjects.Image[];
+  /** Mostra apenas os talhões liberados e ajusta a cerca. */
+  setPlotCount: (count: number) => void;
 }
 
 const GROUND_DEPTH = -20;
@@ -116,9 +120,7 @@ function drawFlowers(scene: Phaser.Scene): void {
   }
 }
 
-function drawFences(scene: Phaser.Scene): void {
-  const graphics = scene.add.graphics().setDepth(FENCE.top + 4);
-
+function drawFences(graphics: Phaser.GameObjects.Graphics, right: number): void {
   const horizontal = (from: number, to: number, y: number): void => {
     graphics.fillStyle(0x8f6a42, 1);
     graphics.fillRect(from, y + 7, to - from, 3);
@@ -140,10 +142,10 @@ function drawFences(scene: Phaser.Scene): void {
   };
 
   horizontal(FENCE.left, FENCE.gateLeft, FENCE.top);
-  horizontal(FENCE.gateRight, FENCE.right, FENCE.top);
-  horizontal(FENCE.left, FENCE.right, FENCE.bottom);
+  horizontal(FENCE.gateRight, right, FENCE.top);
+  horizontal(FENCE.left, right, FENCE.bottom);
   vertical(FENCE.left, FENCE.top, FENCE.bottom);
-  vertical(FENCE.right, FENCE.top, FENCE.bottom);
+  vertical(right, FENCE.top, FENCE.bottom);
 }
 
 export function buildWorld(scene: Phaser.Scene): WorldBuild {
@@ -203,7 +205,39 @@ export function buildWorld(scene: Phaser.Scene): WorldBuild {
     });
   }
 
-  drawFences(scene);
+  const fence = scene.add.graphics().setDepth(FENCE.top + 4);
+  const unlocked = new Set<number>();
+
+  const setPlotCount = (count: number): void => {
+    plotSprites.forEach((sprite, index) => {
+      const open = index < count;
+      if (open === unlocked.has(index)) {
+        return;
+      }
+      sprite.setVisible(open);
+      if (open) {
+        unlocked.add(index);
+        sprite.setInteractive({ useHandCursor: true });
+      } else {
+        unlocked.delete(index);
+        sprite.disableInteractive();
+      }
+    });
+    fence.clear();
+    drawFences(fence, fenceRightFor(count));
+  };
+
+  // Estado inicial: talhões da fazenda nova. O servidor informa o valor real.
+  plotSprites.forEach((sprite, index) => {
+    if (index < BASE_PLOTS) {
+      unlocked.add(index);
+    } else {
+      sprite.setVisible(false);
+      sprite.disableInteractive();
+    }
+  });
+  fence.clear();
+  drawFences(fence, fenceRightFor(BASE_PLOTS));
 
   // Mercado da Ilha
   const market = scene.add
@@ -266,5 +300,6 @@ export function buildWorld(scene: Phaser.Scene): WorldBuild {
   return {
     interactables,
     plotSprites,
+    setPlotCount,
   };
 }

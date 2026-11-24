@@ -31,7 +31,7 @@ class Stat:
 # Intervalo permitido para a soma de bônus de cada estatística (em pontos-base).
 STAT_LIMITS: dict[str, tuple[int, int]] = {
     Stat.CROP_YIELD: (0, 3_000),
-    Stat.CROP_GROW_TIME: (-2_000, 0),
+    Stat.CROP_GROW_TIME: (-2_500, 0),
     Stat.EXTRA_HARVEST_CHANCE: (0, 1_000),
     Stat.SEED_SAVE_CHANCE: (0, 3_000),
     Stat.XP_GAIN: (0, 5_000),
@@ -57,6 +57,10 @@ class Effect:
 class ModifierSet:
     def __init__(self, effects: Iterable[Effect] = ()) -> None:
         self._effects = tuple(effects)
+
+    @property
+    def effects(self) -> tuple[Effect, ...]:
+        return self._effects
 
     def total_bp(self, stat: str, scope: str | None = None) -> int:
         total = sum(

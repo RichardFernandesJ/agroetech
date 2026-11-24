@@ -4,6 +4,7 @@ export interface HouseModalOptions {
   property: Property;
   farmerName: string;
   onLogout: () => void;
+  onOpenBuildings: () => void;
   onClose: () => void;
 }
 
@@ -65,6 +66,7 @@ export class HouseModal {
         </div>
 
         <div class="house-actions">
+          <button type="button" class="btn btn-buildings">🏗️ Construções</button>
           <button type="button" class="btn btn-secondary btn-logout">Desconectar da Conta</button>
           <button type="button" class="btn btn-primary btn-close-modal">Continuar Cultivando</button>
         </div>
@@ -77,6 +79,10 @@ export class HouseModal {
 
     this.root.querySelector(".btn-close-modal")?.addEventListener("click", () => {
       this.options.onClose();
+    });
+
+    this.root.querySelector(".btn-buildings")?.addEventListener("click", () => {
+      this.options.onOpenBuildings();
     });
 
     this.root.querySelector(".btn-logout")?.addEventListener("click", () => {

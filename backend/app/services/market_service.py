@@ -15,8 +15,8 @@ from app.game.modifiers import BP, Stat, effective_fee_bp
 from app.models.user import User
 from app.models.wallet import Wallet, WalletLedgerEntry
 from app.services.inventory_service import InventoryService
+from app.services.modifier_service import ModifierService
 from app.services.property_service import PropertyService
-from app.services.talent_service import TalentService
 from app.services.wallet_service import WalletService
 
 KIND_PURCHASE = "seed_purchase"
@@ -36,12 +36,12 @@ class MarketService:
         properties: PropertyService,
         inventory: InventoryService,
         wallets: WalletService,
-        talents: TalentService,
+        modifiers: ModifierService,
     ) -> None:
         self.properties = properties
         self.inventory = inventory
         self.wallets = wallets
-        self.talents = talents
+        self.modifiers = modifiers
 
     async def buy_seeds(
         self,
@@ -100,7 +100,7 @@ class MarketService:
         )
 
         # Talentos: bônus no preço (por cultura) e redução da taxa, com tetos no motor.
-        modifiers = await self.talents.modifiers_for(user.id)
+        modifiers = await self.modifiers.for_property(user.id, property_id)
         price_bp = modifiers.total_bp(Stat.SELL_PRICE, crop_id_for_item(item_id))
         fee_bp = effective_fee_bp(SALE_FEE_BASIS_POINTS, modifiers.total_bp(Stat.MARKET_FEE))
         gross = unit_price * quantity * (BP + price_bp) // BP

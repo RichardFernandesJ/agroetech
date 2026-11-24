@@ -58,15 +58,32 @@ export const PLOT_GAP = 16;
 const PLOT_START_X = 528;
 const PLOT_START_Y = 496;
 
-export const PLOTS = Array.from({ length: 6 }, (_, index) => {
-  const column = index % 3;
-  const row = Math.floor(index / 3);
+export const BASE_PLOTS = 6;
+export const MAX_PLOTS = 12;
+
+/**
+ * Os 6 primeiros talhões formam a grade 3x2. Cada melhoria da Casa da Fazenda
+ * abre uma coluna nova (2 talhões), para o leste, onde ainda há terra firme
+ * (ao sul fica a praia).
+ */
+export const PLOTS = Array.from({ length: MAX_PLOTS }, (_, index) => {
+  const extra = index - BASE_PLOTS;
+  const column = extra < 0 ? index % 3 : 3 + Math.floor(extra / 2);
+  const row = extra < 0 ? Math.floor(index / 3) : extra % 2;
   return {
     index,
     x: PLOT_START_X + column * (PLOT_SIZE + PLOT_GAP),
     y: PLOT_START_Y + row * (PLOT_SIZE + PLOT_GAP),
   };
 });
+
+/** Cerca direita conforme os talhões liberados (3 colunas + 1 a cada 2 talhões extras). */
+export function fenceRightFor(plotCount: number): number {
+  const columns = 3 + Math.ceil(Math.max(0, plotCount - BASE_PLOTS) / 2);
+  return PLOT_START_X + columns * (PLOT_SIZE + PLOT_GAP);
+}
+
+export const FENCE_MAX_RIGHT = fenceRightFor(MAX_PLOTS);
 
 export const PIER_TILES = [
   { x: 33, y: 10 },
@@ -155,7 +172,7 @@ export const PALM_TREES: TreeSpot[] = [
   { x: 300, y: 220 },
   { x: 860, y: 190 },
   { x: 1040, y: 440 },
-  { x: 990, y: 640 },
+  { x: 850, y: 740 },
   { x: 750, y: 770 },
   { x: 440, y: 750 },
   { x: 260, y: 440 },
@@ -171,7 +188,7 @@ export const INLAND_TREES: TreeSpot[] = [
   { x: 460, y: 520 },
   { x: 420, y: 630 },
   { x: 820, y: 460 },
-  { x: 860, y: 590 },
+  { x: 1010, y: 455 },
   { x: 490, y: 310 },
   { x: 770, y: 320 },
 ];
@@ -206,7 +223,7 @@ export function isDecorBlocked(x: number, y: number): boolean {
   }
   if (
     x >= FENCE.left - 16 &&
-    x <= FENCE.right + 16 &&
+    x <= FENCE_MAX_RIGHT + 16 &&
     y >= FENCE.top - 16 &&
     y <= FENCE.bottom + 16
   ) {

@@ -4,8 +4,9 @@ import uuid
 from collections.abc import Sequence
 
 from app.core.config import settings
-from app.core.exceptions import GameRuleError, NotFoundError
+from app.core.exceptions import ConflictError, GameRuleError, NotFoundError
 from app.core.time import utcnow
+from app.game.buildings import STARTING_PLOTS
 from app.game.catalog import STARTER_SEEDS
 from app.models.property import Property
 from app.repositories.inventory_repository import InventoryRepository
@@ -28,11 +29,19 @@ class PropertyService:
                 f"Uma propriedade pode ter no máximo {settings.max_plots_per_property} talhões."
             )
 
+        if payload.plot_count > STARTING_PLOTS:
+            raise GameRuleError(
+                f"Uma fazenda nova começa com {STARTING_PLOTS} talhões; "
+                "mais talhões vêm da melhoria da Casa da Fazenda."
+            )
+        if await self.properties.list_by_owner(owner_id):
+            raise ConflictError("Você já possui uma fazenda.")
+
         property_ = Property(
             owner_id=owner_id,
             name=payload.name,
             area_hectares=payload.area_hectares,
-            plot_count=payload.plot_count,
+            plot_count=STARTING_PLOTS,
             last_production_sync_at=utcnow(),
         )
         await self.properties.add(property_)

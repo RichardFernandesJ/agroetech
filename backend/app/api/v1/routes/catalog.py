@@ -2,9 +2,12 @@
 
 from fastapi import APIRouter
 
+from app.api.v1.routes.buildings import level_to_read
 from app.api.v1.serializers import serialize_crop
+from app.game.buildings import BUILDINGS
 from app.game.catalog import CROPS, ITEM_CATALOG
 from app.game.talents import BRANCHES, MAP_CENTER, NODES, TIER_NAMES
+from app.schemas.building import BuildingCatalogRead
 from app.schemas.catalog import CropRead, ItemRead
 from app.schemas.talent import BranchRead, EffectRead, TalentCatalogRead, TalentNodeRead
 
@@ -72,3 +75,22 @@ async def list_talents() -> TalentCatalogRead:
             for node in NODES
         ],
     )
+
+
+@router.get(
+    "/buildings",
+    response_model=list[BuildingCatalogRead],
+    summary="Construções, níveis, custos e benefícios",
+)
+async def list_buildings() -> list[BuildingCatalogRead]:
+    return [
+        BuildingCatalogRead(
+            id=definition.id,
+            name=definition.name,
+            description=definition.description,
+            initial_level=definition.initial_level,
+            max_level=definition.max_level,
+            levels=[level_to_read(level) for level in definition.levels],
+        )
+        for definition in BUILDINGS.values()
+    ]

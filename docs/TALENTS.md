@@ -29,7 +29,7 @@ correspondente existir; um teste impede talentos para estatísticas não impleme
 | Estatística | Mecânica | Teto |
 |---|---|---|
 | `crop_yield` | produção por colheita | +30% |
-| `crop_grow_time` | tempo de crescimento | −20% |
+| `crop_grow_time` | tempo de crescimento | −25% |
 | `extra_harvest_chance` | colheita extra | 10% |
 | `seed_save_chance` | economia de semente | 30% |
 | `xp_gain` | XP | +50% |

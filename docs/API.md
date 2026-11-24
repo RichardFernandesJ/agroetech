@@ -345,6 +345,45 @@ Efeitos no jogo:
 - **Mercado:** `sell_price` e `market_fee` valem na hora da venda. `GET /market/offers`
   passa a trazer `sell_bonus_bp` por item e a `fee_basis_points` efetiva.
 
+### Construções (Fase 5)
+
+Construções têm níveis; cada melhoria custa AgroCoin e exige nível de jogador.
+Conteúdo em `backend/app/game/buildings.py`.
+
+| Construção | Nível | Custo | Nível do jogador | Efeito |
+|---|---:|---:|---:|---|
+| Casa da Fazenda | 1 (inicial) | — | 1 | 6 talhões |
+| | 2 | 150 | 3 | 8 talhões |
+| | 3 | 400 | 8 | 10 talhões |
+| | 4 | 900 | 15 | 12 talhões |
+| Poço da Ilha | 1 | 60 | 2 | tempo de crescimento −2% |
+| | 2 | 200 | 6 | −4% |
+| | 3 | 500 | 12 | −6% |
+
+#### GET `/api/v1/catalog/buildings` (público)
+
+Todas as construções, níveis, custos e efeitos.
+
+#### GET `/api/v1/properties/{property_id}/buildings` 🔒
+
+Estado de cada construção na fazenda: `level`, `max_level`, `current`, `next`,
+`can_upgrade` e `blocked_reason` (nível de jogador ou saldo insuficiente), além de
+`plot_count`, `player_level` e `balance`.
+
+#### POST `/api/v1/properties/{property_id}/buildings/{building_id}/upgrade` 🔒
+
+Melhora a construção em um nível, debitando o custo (ledger `building_upgrade`).
+Aceita `Idempotency-Key` (8–64 caracteres): reenviar a mesma chave não cobra de novo
+(`"replayed": true`); a mesma chave em outra operação retorna `409`.
+`422` se faltar nível de jogador, saldo ou se já estiver no nível máximo; `404` para
+construção desconhecida ou fazenda de outro jogador. O efeito dos talhões vale na hora
+(`plots`); bônus como o do Poço valem para plantios **novos** (ficam gravados no plantio).
+
+#### Mudanças em `POST /api/v1/properties`
+
+Cada jogador pode ter **uma** fazenda (`409` na segunda) e ela sempre começa com 6
+talhões (`plot_count` maior que 6 retorna `422`). Mais talhões só pela Casa da Fazenda.
+
 ## 7. Infra
 
 | Método | Rota | Descrição |

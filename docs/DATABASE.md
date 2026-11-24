@@ -208,6 +208,20 @@ Auditoria de redefinições: `user_id`, `preset_id`, `nodes_removed`, `cost`,
 `grow_seconds` (INTEGER, nulo = usa o tempo do catálogo) e `modifiers` (JSON com os
 bônus em pontos-base vigentes no plantio). Migração: `0005_talents`.
 
+### `buildings`
+
+Uma linha por construção já melhorada na fazenda (sem linha = nível inicial do catálogo).
+
+| Coluna | Tipo | Regras |
+|---|---|---|
+| `id` | UUID | PK |
+| `property_id` | UUID | FK `properties.id`, CASCADE, indexado |
+| `building_id` | VARCHAR(40) | id do catálogo (`sede`, `poco`) |
+| `level` | INTEGER | NOT NULL, `>= 0` |
+
+Constraints: `uq_buildings_property_building`, `ck_buildings_level_non_negative`.
+Migração: `0006_buildings`.
+
 ## 4. Regras que o banco não expressa
 
 Algumas regras ficam nos services porque dependem do catálogo ou de tempo:

@@ -226,3 +226,22 @@ servidor, transações atômicas, histórico, taxas e prevenção de duplicaçã
 **Consequências:** Base pronta para mercado global e trocas. A venda ao entreposto
 NPC ainda emite moeda limitada pela produção das fazendas; o balanceamento deve ser
 revisto com dados reais antes do multiplayer.
+
+## ADR-016 — Construções como catálogo com níveis e bônus pelo motor de modificadores
+
+**Contexto:** A Fase 5 começa pelas construções melhoráveis (último item do MVP). O
+AGENTS.md pede expansão de terrenos, melhorias e evitar regras espalhadas.
+
+**Decisão:**
+1. Construções são conteúdo em código (`game/buildings.py`), com níveis, custo em AGC,
+   nível de jogador mínimo e efeitos. O banco guarda só o nível por fazenda (`buildings`).
+2. Efeitos de bônus são `Effect` do motor de modificadores; o `ModifierService` soma
+   talentos e construções. Novas fontes (guilda, território) entram ali.
+3. Talhões não são um modificador: a melhoria da Casa grava `plot_count` na fazenda.
+4. A melhoria usa a carteira (travada), é idempotente e atômica, no mesmo padrão do mercado.
+5. Brecha corrigida: uma fazenda por jogador, 6 talhões iniciais fixos.
+6. No cliente, eventos do mouse só valem no mundo se nascerem no canvas e sem painel aberto.
+
+**Consequências:** Estruturas novas (celeiro, galinheiro, estábulo) viram entradas do
+catálogo + um card no painel. A expansão visual de talhões segue o layout do mapa
+(colunas a leste); novas estruturas físicas precisarão de posição própria no mapa.

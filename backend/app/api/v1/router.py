@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from app.api.v1.routes import (
     auth,
+    buildings,
     catalog,
     characters,
     inventory,
@@ -28,3 +29,4 @@ api_router.include_router(wallet.router)
 api_router.include_router(market.router)
 api_router.include_router(progress.router)
 api_router.include_router(talents.router)
+api_router.include_router(buildings.router)

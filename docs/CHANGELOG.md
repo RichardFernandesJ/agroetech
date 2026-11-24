@@ -11,6 +11,24 @@ Versionamento semântico para a API e o cliente.
 - Expansão de talhões e novas construções.
 - Ampliar E2E Playwright (plantio e colheita).
 
+## [0.7.0] — 2026-11-23
+
+### Adicionado
+
+- **Fase 5 — Construções melhoráveis:** Casa da Fazenda (6 a 12 talhões) e Poço da Ilha (−2/−4/−6% no tempo de crescimento). Tabela `buildings` (migração `0006_buildings`).
+- Endpoints `GET /catalog/buildings`, `GET /properties/{id}/buildings` e `POST /properties/{id}/buildings/{building}/upgrade` (idempotente, atômico, paga em AGC, exige nível).
+- `ModifierService`: reúne talentos e construções no mesmo `ModifierSet`; plantio e mercado passaram a usá-lo.
+- Painel **🏗️ Construções** (menu do HUD, clique na Casa ou no Poço), talhões novos no mapa (até 12) com cerca dinâmica.
+- 15 testes de construções (114 no total) e E2E de construções.
+
+### Corrigido
+
+- **Brecha:** `POST /properties` permitia criar várias fazendas (sementes grátis a cada uma) e escolher o número de talhões. Agora é uma fazenda por jogador, com 6 talhões iniciais.
+- **Clique vazando para o mapa:** clicar num botão de painel que estivesse sobre um talhão abria o seletor de plantio. A cena ignora eventos que não nasceram no canvas ou com painel aberto.
+- Painéis mais altos que a janela eram cortados no topo; agora rolam a partir do cabeçalho.
+- Dica do HUD movida para baixo (colidia com o menu); palmeira que cobria um talhão novo foi realocada.
+- Teto de redução do tempo de crescimento passou de −20% para −25% para comportar talentos + Poço.
+
 ## [0.6.0] — 2026-11-23
 
 ### Adicionado

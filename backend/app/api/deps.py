@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.core.exceptions import AuthenticationError, InvalidTokenError
 from app.core.security import decode_access_token
 from app.models.user import User
+from app.repositories.building_repository import BuildingRepository
 from app.repositories.character_repository import CharacterRepository
 from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.planting_repository import PlantingRepository
@@ -20,9 +21,11 @@ from app.repositories.talent_repository import TalentRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.wallet_repository import WalletRepository
 from app.services.auth_service import AuthService
+from app.services.building_service import BuildingService
 from app.services.character_service import CharacterService
 from app.services.inventory_service import InventoryService
 from app.services.market_service import MarketService
+from app.services.modifier_service import ModifierService
 from app.services.planting_service import PlantingService
 from app.services.production_service import ProductionService
 from app.services.progress_service import ProgressService
@@ -90,14 +93,30 @@ def get_talent_service(db: DbSession) -> TalentService:
     )
 
 
+def get_modifier_service(db: DbSession) -> ModifierService:
+    return ModifierService(get_talent_service(db), BuildingRepository(db))
+
+
+def get_building_service(
+    db: DbSession,
+    properties: Annotated[PropertyService, Depends(get_property_service)],
+) -> BuildingService:
+    return BuildingService(
+        BuildingRepository(db),
+        properties,
+        ProgressService(db, ProgressRepository(db)),
+        WalletService(db, WalletRepository(db)),
+    )
+
+
 def get_market_service(
     db: DbSession,
     properties: Annotated[PropertyService, Depends(get_property_service)],
     inventory: Annotated[InventoryService, Depends(get_inventory_service)],
     wallets: Annotated[WalletService, Depends(get_wallet_service)],
-    talents: Annotated[TalentService, Depends(get_talent_service)],
+    modifiers: Annotated[ModifierService, Depends(get_modifier_service)],
 ) -> MarketService:
-    return MarketService(properties, inventory, wallets, talents)
+    return MarketService(properties, inventory, wallets, modifiers)
 
 
 def get_character_service(
@@ -122,7 +141,7 @@ def get_planting_service(
         inventory=InventoryService(db, InventoryRepository(db)),
         production=production,
         progress=ProgressService(db, ProgressRepository(db)),
-        talents=get_talent_service(db),
+        modifiers=get_modifier_service(db),
     )
 
 
@@ -136,3 +155,4 @@ WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
 MarketServiceDep = Annotated[MarketService, Depends(get_market_service)]
 ProgressServiceDep = Annotated[ProgressService, Depends(get_progress_service)]
 TalentServiceDep = Annotated[TalentService, Depends(get_talent_service)]
+BuildingServiceDep = Annotated[BuildingService, Depends(get_building_service)]

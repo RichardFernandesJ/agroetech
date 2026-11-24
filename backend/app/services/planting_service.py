@@ -18,10 +18,10 @@ from app.models.property import Property
 from app.repositories.planting_repository import PlantingRepository
 from app.schemas.planting import PlantingCreate
 from app.services.inventory_service import InventoryService
+from app.services.modifier_service import ModifierService
 from app.services.production_service import ProductionService
 from app.services.progress_service import ProgressService
 from app.services.property_service import PropertyService
-from app.services.talent_service import TalentService
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,7 +49,7 @@ class PlantingService:
         inventory: InventoryService,
         production: ProductionService,
         progress: ProgressService,
-        talents: TalentService,
+        modifiers: ModifierService,
     ) -> None:
         self.session = session
         self.properties = properties
@@ -57,7 +57,7 @@ class PlantingService:
         self.inventory = inventory
         self.production = production
         self.progress = progress
-        self.talents = talents
+        self.modifiers = modifiers
 
     async def list_plantings(
         self,
@@ -100,7 +100,7 @@ class PlantingService:
         )
 
         # Bônus de talentos vigentes agora; gravados no plantio (ver Planting.modifiers).
-        modifiers = (await self.talents.modifiers_for(owner_id)).snapshot(crop.id)
+        modifiers = (await self.modifiers.for_property(owner_id, property_.id)).snapshot(crop.id)
         planting_id = uuid.uuid4()
         rng = seeded_rng("plant", planting_id)
         if roll(modifiers[Stat.SEED_SAVE_CHANCE], rng):

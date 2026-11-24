@@ -16,7 +16,7 @@ mas falta escopo da fase.
 | 3 | Agricultura Point & Click | ✅ Concluída |
 | 4 | Economia básica (AgroCoin & Mercado) | 🟡 Em andamento (núcleo pronto) |
 | 4.5 | Progressão e Talentos (XP, árvore, presets) | 🟡 Em andamento (fatias 1 a 3 prontas) |
-| 5 | Produção (animais, construções, fabricação) | ⬜ Não iniciada |
+| 5 | Produção (animais, construções, fabricação) | 🟡 Em andamento (construções prontas) |
 | 6 | Multiplayer econômico | ⬜ Não iniciada |
 | 7 | Expansão (cidades, regiões, profissões) | ⬜ Não iniciada |
 | 8 | Lançamento | ⬜ Não iniciada |
@@ -82,11 +82,14 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 - [x] Fatia 3 — Interface da árvore de talentos (mapa SVG com pan/zoom, painel lateral, presets).
 - [ ] Fatia 4 — Demais ramos, conforme as mecânicas da Fase 5.
 
-## Fase 5 — Produção ⬜
+## Fase 5 — Produção 🟡
 
+- [x] Construções melhoráveis: Casa da Fazenda (expansão de terreno) e Poço (irrigação).
+- [x] Bônus de construções integrado ao motor de modificadores (`ModifierService`).
+- [x] Uma fazenda por jogador e talhões iniciais fixos (corrige brecha de criação).
+- [ ] Mais construções: celeiro (armazenamento), estábulo, galinheiro.
 - [ ] Animais (galinha, vaca, ovelha, porco, cabra, abelha).
 - [ ] Alimentação, ciclo de produção e melhorias.
-- [ ] Construções e expansão de terreno.
 - [ ] Receitas e estações (moinho, padaria, queijaria, engenho, cozinha).
 - [ ] `ProductionJobs` para processos com duração.
 
@@ -128,7 +131,7 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 | Venda para NPCs | ✅ |
 | Compra de sementes | ✅ |
 | Experiência e níveis | ✅ |
-| Construção melhorável | ⬜ (Fase 5) |
+| Construção melhorável | ✅ |
 
 ## Pendências técnicas
 
@@ -137,8 +140,12 @@ de produto (2026-11-23); guildas e disputas permanecem nas Fases 6 e 7.
 - Ampliar E2E Playwright: plantio e colheita pela UI (hoje cobre cadastro, perfil, HUD e sessão).
 - Pasta `workers/` do backend (necessária a partir da Fase 5).
 
+> **MVP completo:** todos os itens do checklist acima estão entregues (falta apenas
+> validar o ciclo no navegador com Docker/PostgreSQL e balancear com dados reais).
+
 ## Próxima entrega recomendada
 
-**Fase 5 (Produção), pelas estruturas:** a primeira construção melhorável fecha o MVP;
-depois animais, fabricação e receitas, reaproveitando o menu do HUD, o `ModalManager`
-e o motor de modificadores.
+**Fase 5, animais:** estruturas de criação (galinheiro, estábulo) como construções do
+catálogo, animais com alimentação e produção offline determinística, reaproveitando
+`buildings`, `ModifierService`, `ModalManager` e o menu do HUD. Antes, dividir a
+`FarmScene` (≈700 linhas) para a cena não crescer mais.

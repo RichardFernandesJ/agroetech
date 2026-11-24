@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-import { buildWorld, type WorldObjectInteractable } from "@/game/world/build-world";
+import { buildWorld, type WorldBuild, type WorldObjectInteractable } from "@/game/world/build-world";
 import {
   ISLAND_CENTER,
   PLOTS,
@@ -20,6 +20,7 @@ import { gameState } from "@/state/game-state";
 import { session } from "@/state/session";
 import { HouseModal } from "@/ui/house-modal";
 import { Hud } from "@/ui/hud";
+import { BuildingsModal } from "@/ui/buildings-modal";
 import { MarketModal } from "@/ui/market-modal";
 import { ModalManager } from "@/ui/modal-manager";
 import { TalentModal } from "@/ui/talent-modal";
@@ -43,6 +44,7 @@ const SYNC_INTERVAL_MS = 4000;
  */
 export class FarmScene extends Phaser.Scene {
   private hud?: Hud;
+  private world?: WorldBuild;
   private property?: Property;
   private token?: string;
   private catalogCrops: CropCatalogItem[] = [];
@@ -83,6 +85,7 @@ export class FarmScene extends Phaser.Scene {
     createWorldTextures(this);
 
     const world = buildWorld(this);
+    this.world = world;
 
     // Configuração de câmera livre
     const camera = this.cameras.main;
@@ -108,6 +111,12 @@ export class FarmScene extends Phaser.Scene {
           label: "🏪 Mercado",
           title: "Comprar sementes e vender safras",
           onClick: () => this.openMarketModal(),
+        },
+        {
+          id: "buildings",
+          label: "🏗️ Construções",
+          title: "Melhorar a casa, o poço e outras construções",
+          onClick: () => this.openBuildingsModal(),
         },
         {
           id: "talents",
@@ -156,6 +165,9 @@ export class FarmScene extends Phaser.Scene {
 
     // Pan (arrastar a tela)
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (!this.isWorldPointer(pointer)) {
+        return;
+      }
       this.isDragging = true;
       this.hasDragged = false;
       this.dragStartX = pointer.x;
@@ -185,6 +197,19 @@ export class FarmScene extends Phaser.Scene {
     this.input.on("pointerup", () => {
       this.isDragging = false;
     });
+  }
+
+  /**
+   * O Phaser também escuta o mouse na janela inteira. Sem este filtro, clicar
+   * num botão de painel que esteja sobre um talhão "vazava" para o mundo.
+   * Só vale evento que nasceu no canvas e sem painel aberto.
+   */
+  private isWorldPointer(pointer: Phaser.Input.Pointer): boolean {
+    if (this.modals.isOpen) {
+      return false;
+    }
+    const target = pointer.event?.target;
+    return target === undefined || target === null || target === this.game.canvas;
   }
 
   private applyZoomAt(targetZoom: number, screenX: number, screenY: number): void {
@@ -229,7 +254,10 @@ export class FarmScene extends Phaser.Scene {
     for (const item of interactables) {
       const obj = item.gameObject;
 
-      obj.on("pointerover", () => {
+      obj.on("pointerover", (pointer: Phaser.Input.Pointer) => {
+        if (!this.isWorldPointer(pointer)) {
+          return;
+        }
         if ("setTint" in obj && typeof obj.setTint === "function") {
           obj.setTint(0xfff5d0);
         }
@@ -243,8 +271,8 @@ export class FarmScene extends Phaser.Scene {
         this.hud?.setPrompt(null);
       });
 
-      obj.on("pointerup", () => {
-        if (this.hasDragged) {
+      obj.on("pointerup", (pointer: Phaser.Input.Pointer) => {
+        if (this.hasDragged || !this.isWorldPointer(pointer)) {
           return;
         }
         this.handleInteractiveClick(item);
@@ -289,7 +317,7 @@ export class FarmScene extends Phaser.Scene {
     }
 
     if (item.id === "well") {
-      this.hud?.toast("💧 Poço artesiano da Ilha: água cristalina garantindo a irrigação permanente das suas culturas.");
+      this.openBuildingsModal("poco");
       return;
     }
 
@@ -352,6 +380,7 @@ export class FarmScene extends Phaser.Scene {
         new HouseModal({
           property,
           farmerName: character.name,
+          onOpenBuildings: () => this.openBuildingsModal("sede"),
           onLogout: () => {
             session.clear();
             this.scene.start("BootScene");
@@ -378,6 +407,33 @@ export class FarmScene extends Phaser.Scene {
             this.balance = balance;
             this.inventoryItems = items;
             this.hud?.setBalance(balance);
+          },
+          onClose: close,
+        }),
+    );
+  }
+
+  private openBuildingsModal(focus?: string): void {
+    if (!this.property || !this.token) {
+      return;
+    }
+
+    const { id: propertyId } = this.property;
+    const token = this.token;
+    this.modals.open(
+      (close) =>
+        new BuildingsModal({
+          propertyId,
+          token,
+          focus,
+          onChange: (state) => {
+            this.balance = state.balance;
+            this.hud?.setBalance(state.balance);
+            if (this.property) {
+              this.property = { ...this.property, plot_count: state.plot_count };
+              this.hud?.setFarm(this.property.name, state.plot_count);
+            }
+            this.world?.setPlotCount(state.plot_count);
           },
           onClose: close,
         }),
@@ -578,6 +634,7 @@ export class FarmScene extends Phaser.Scene {
       this.property = property;
       this.catalogCrops = crops;
       this.hud?.setFarm(property.name, property.plot_count);
+      this.world?.setPlotCount(property.plot_count);
 
       await Promise.all([
         this.syncPlantings(),
